@@ -1,0 +1,5 @@
+# 本地配置（含 API Key，绝不 commit）
+config.json
+
+# 本地运行时缓存（实际位于 ~/.cache/wind-aimarket/，此处保险）
+.cache/
