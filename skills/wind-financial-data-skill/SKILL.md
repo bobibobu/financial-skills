@@ -28,12 +28,12 @@ homepage: https://aimarket.wind.com.cn
 
 ## 工作流程（3 步）
 
-所有命令以 `node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs` 为前缀。
+> **所有命令在 skill 目录下运行**（AI 调用 Bash 工具时，cwd 自动就是 skill 根目录），路径用相对形式 `scripts/cli.mjs`。
 
 ### Step 1：列出可用工具
 
 ```bash
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs list-tools
+node scripts/cli.mjs list-tools
 ```
 
 返回本 server 的全部工具（`search_financial_data` / `get_financial_documents`），含完整 `inputSchema`。
@@ -50,7 +50,7 @@ node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs list-tools
 ### Step 3：调用
 
 ```bash
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call <tool_name> '<params_json>'
+node scripts/cli.mjs call <tool_name> '<params_json>'
 ```
 
 ## 典型示例
@@ -58,7 +58,7 @@ node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call <tool_name>
 **用例 A：数值查询 — "贵州茅台 2024 年营收"**
 
 ```bash
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call \
+node scripts/cli.mjs call \
   search_financial_data \
   '{"question":"贵州茅台 2024 年营业收入"}'
 # → 结构化数值（营收金额）
@@ -67,7 +67,7 @@ node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call \
 **用例 B：文档检索 — "贵州茅台 2024 年报关于产能扩张的论述"**
 
 ```bash
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call \
+node scripts/cli.mjs call \
   get_financial_documents \
   '{"query":"贵州茅台 2024 年报 产能扩张","docType":"3","top_k":5}'
 # → 公告类文档片段
@@ -84,7 +84,7 @@ node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call \
 1. **先询问用户**，类似："你还没配置万得 API Key。要我现在帮你打开开发者中心拿 Key 吗？"
 2. **用户同意** → 跑 `open-portal` 子命令：
    ```bash
-   node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs open-portal
+   node scripts/cli.mjs open-portal
    ```
    命令返回 JSON，里面：
    - `url` 字段是要访问的链接（已登录直达 overview，未登录 SPA 会自动跳到 `/#/login`）
@@ -96,8 +96,8 @@ node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call \
 # A. 环境变量
 export WIND_API_KEY=ak_xxx
 
-# B. 本 skill 目录 config.json（仅本 skill 用）
-echo '{"wind_api_key":"ak_xxx"}' > ~/.claude/skills/wind-financial-data-skill/config.json
+# B. 本 skill 目录 config.json（仅本 skill 用，路径相对 skill 根）
+echo '{"wind_api_key":"ak_xxx"}' > config.json
 
 # C. 全局 config（推荐：所有 wind 系列 skill 共享一份）
 mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/config

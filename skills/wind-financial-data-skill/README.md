@@ -45,20 +45,22 @@ mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/confi
 
 ## 🧪 手动测试
 
+> 假设你已经 `cd` 到 skill 目录（Claude Code: `~/.claude/skills/wind-financial-data-skill/`；其他 agent 路径可能不同，但脚本路径相对 skill 根都是 `scripts/cli.mjs`）。
+
 ```bash
 # 1. 列出工具（看完整 inputSchema）
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs list-tools
+node scripts/cli.mjs list-tools
 
 # 2. 数值查询示例
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call search_financial_data \
+node scripts/cli.mjs call search_financial_data \
   '{"question":"贵州茅台 2024 年营业收入"}'
 
 # 3. 文档检索示例
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call get_financial_documents \
+node scripts/cli.mjs call get_financial_documents \
   '{"query":"贵州茅台 2024 年报 产能扩张","docType":"3","top_k":5}'
 
 # 4. 没有 API Key？打开开发者中心拿一个
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs open-portal
+node scripts/cli.mjs open-portal
 ```
 
 > 实际参数以 `list-tools` 输出的 `inputSchema` 为准。

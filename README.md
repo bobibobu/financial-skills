@@ -49,13 +49,14 @@ npx skills add JsonCodeChina/wind-skills --list
 
 ### 让 AI 帮你打开开发者中心拿 Key（推荐）
 
-装好 skill 后，第一次问行情 / 财务问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 会运行：
+装好 skill 后，第一次问行情 / 财务问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 在 skill 目录下运行：
 
 ```bash
-node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs open-portal
-# 或
-node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs open-portal
+# AI 端自动 cd 到 skill 根目录后跑
+node scripts/cli.mjs open-portal
 ```
+
+> 想手动跑：先 `cd` 到 skill 安装目录（Claude Code: `~/.claude/skills/<name>/`），再执行上面命令。所有 skill 内脚本路径都是相对 skill 根目录的 `scripts/cli.mjs`。
 
 跨平台自动调浏览器（macOS `open` / Linux `xdg-open` / Windows `start`），打开 `https://aimarket.wind.com.cn/#/user/overview`：
 

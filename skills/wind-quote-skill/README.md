@@ -45,16 +45,18 @@ mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/confi
 
 ## 🧪 手动测试
 
+> 假设你已经 `cd` 到 skill 目录（Claude Code: `~/.claude/skills/wind-quote-skill/`；其他 agent 路径可能不同，但脚本路径相对 skill 根都是 `scripts/cli.mjs`）。
+
 ```bash
 # 1. 列出工具
-node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs list-tools
+node scripts/cli.mjs list-tools
 
 # 2. 调用：查贵州茅台最新价
-node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs call quote_get_indicators \
+node scripts/cli.mjs call quote_get_indicators \
   '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE"}'
 
 # 3. 没有 API Key？打开开发者中心拿一个
-node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs open-portal
+node scripts/cli.mjs open-portal
 ```
 
 ---
