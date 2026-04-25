@@ -56,6 +56,9 @@ node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call search_fina
 # 3. 文档检索示例
 node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs call get_financial_documents \
   '{"query":"贵州茅台 2024 年报 产能扩张","docType":"3","top_k":5}'
+
+# 4. 没有 API Key？打开开发者中心拿一个
+node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs open-portal
 ```
 
 > 实际参数以 `list-tools` 输出的 `inputSchema` 为准。

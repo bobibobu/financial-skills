@@ -47,13 +47,28 @@ npx skills add JsonCodeChina/wind-skills --list
 
 ## 🔑 配置 API Key（一次配置，全系列共享）
 
-所有 wind 系列 skill **共用一份全局配置**：
+### 让 AI 帮你打开开发者中心拿 Key（推荐）
+
+装好 skill 后，第一次问行情 / 财务问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 会运行：
+
+```bash
+node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs open-portal
+# 或
+node ~/.claude/skills/wind-financial-data-skill/scripts/cli.mjs open-portal
+```
+
+跨平台自动调浏览器（macOS `open` / Linux `xdg-open` / Windows `start`），打开 `https://aimarket.wind.com.cn/#/user/overview`：
+
+- **已登录** → 直接看到个人中心，复制 API Key
+- **未登录** → SPA 自动跳到 `/#/login`，登录后回到 overview 即可
+
+> headless / 远程 SSH / 无 GUI 环境下 spawn 会失败，命令会输出 `fallback_message` 让你手动复制 URL。
+
+### 拿到 Key 后配置
 
 ```bash
 mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/config
 ```
-
-**获取 Key：** [aimarket.wind.com.cn](https://aimarket.wind.com.cn) → 登录 → 开发者中心
 
 ### 三级兜底（按优先级）
 

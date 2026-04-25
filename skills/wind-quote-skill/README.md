@@ -52,6 +52,9 @@ node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs list-tools
 # 2. 调用：查贵州茅台最新价
 node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs call quote_get_indicators \
   '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE"}'
+
+# 3. 没有 API Key？打开开发者中心拿一个
+node ~/.claude/skills/wind-quote-skill/scripts/cli.mjs open-portal
 ```
 
 ---

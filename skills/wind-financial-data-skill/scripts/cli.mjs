@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-// wind-financial-data-skill · v0.1.0
+// wind-financial-data-skill · v0.2.0
 // 专题 skill：1:1 包装 vserver_wind_financial_data MCP server
-// 两命令：list-tools / call <tool_name> <params_json>
+// 三命令：list-tools / call <tool_name> <params_json> / open-portal
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
 
-const SKILL_VERSION = '0.1.0';
+const SKILL_VERSION = '0.2.0';
 const MCP_ENDPOINT = 'https://mcp.wind.com.cn/vserver_wind_financial_data/mcp/';
 const SERVER_ID = 'wind-financial-data';
+const PORTAL_URL = 'https://aimarket.wind.com.cn/#/user/overview';
 
 const SKILL_DIR = dirname(dirname(fileURLToPath(import.meta.url)));
 const CACHE_DIR = join(homedir(), '.cache', 'wind-aimarket', 'tools');
@@ -58,11 +60,14 @@ function getApiKey() {
   }
 
   die(
-    `❌ WIND_API_KEY 未配置。请任选一种配置：\n` +
+    `❌ WIND_API_KEY 未配置。\n\n` +
+    `获取 Key（推荐先问用户是否同意，再帮他打开浏览器）：\n` +
+    `  $ node ${join(SKILL_DIR, 'scripts', 'cli.mjs')} open-portal\n` +
+    `或手动访问：${PORTAL_URL}（未登录会自动跳到 /#/login）\n\n` +
+    `拿到 Key 后任选一种方式配置：\n` +
     `  A. export WIND_API_KEY=ak_xxx\n` +
-    `  B. echo '{"wind_api_key":"ak_xxx"}' > ~/.claude/skills/wind-financial-data-skill/config.json\n` +
-    `  C. mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/config  (推荐：所有 wind skill 共享)\n\n` +
-    `获取 Key: https://aimarket.wind.com.cn → 登录 → 开发者中心`
+    `  B. echo '{"wind_api_key":"ak_xxx"}' > ${join(SKILL_DIR, 'config.json')}\n` +
+    `  C. mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/config  (推荐：所有 wind skill 共享)`
   );
 }
 
@@ -150,6 +155,41 @@ async function cmdListTools() {
   console.log(JSON.stringify({ ok: true, from_cache: false, ...result }, null, 2));
 }
 
+async function cmdOpenPortal() {
+  const platform = process.platform;
+  let bin, args;
+  if (platform === 'darwin') { bin = 'open'; args = [PORTAL_URL]; }
+  else if (platform === 'win32') { bin = 'cmd'; args = ['/c', 'start', '', PORTAL_URL]; }
+  else { bin = 'xdg-open'; args = [PORTAL_URL]; }
+
+  let spawnError = null;
+  try {
+    const child = spawn(bin, args, { stdio: 'ignore', detached: true });
+    child.unref();
+    spawnError = await new Promise((resolve) => {
+      child.once('error', resolve);
+      setTimeout(() => resolve(null), 300);
+    });
+  } catch (err) {
+    spawnError = err;
+  }
+
+  const result = {
+    ok: !spawnError,
+    action: 'open-portal',
+    url: PORTAL_URL,
+    platform,
+    spawn_command: `${bin} ${args.join(' ')}`,
+    flow_note: '未登录时会自动跳转到登录页（/#/login）；登录完成后回到 overview 页面即可获取 API Key。',
+    fallback_message: `如果浏览器没有自动弹出，请手动访问：${PORTAL_URL}`,
+  };
+  if (spawnError) {
+    result.error = spawnError.message;
+    result.headless_hint = '本地无法启动浏览器（headless / 无 GUI / 命令不存在）。请把 url 字段告知用户，让他在自己设备的浏览器里打开。';
+  }
+  console.log(JSON.stringify(result, null, 2));
+}
+
 async function cmdCall(toolName, paramsJson) {
   if (!toolName || !paramsJson) {
     die(`❌ 用法：call <tool_name> <params_json>\n例：call get_financial_documents '{"query":"贵州茅台 2025 年报","docType":"3"}'`);
@@ -178,13 +218,15 @@ const USAGE =
   `专注 Wind 金融基本面数据 + RAG 检索（MCP server: ${SERVER_ID}）\n\n` +
   `用法：\n` +
   `  cli.mjs list-tools\n` +
-  `  cli.mjs call <tool_name> '<params_json>'\n\n` +
+  `  cli.mjs call <tool_name> '<params_json>'\n` +
+  `  cli.mjs open-portal              # 打开万得开发者中心拿 API Key\n\n` +
   `先 list-tools 看可用工具，再 call 执行。\n` +
   `典型：cli.mjs call search_financial_data '{"question":"贵州茅台 2024 年营业收入"}'`;
 
 const commands = {
   'list-tools': () => cmdListTools(),
   call: () => cmdCall(args[0], args[1]),
+  'open-portal': () => cmdOpenPortal(),
 };
 
 if (!cmd || !commands[cmd]) {
