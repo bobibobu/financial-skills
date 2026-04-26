@@ -14,6 +14,7 @@ version: v1
 
 | Skill | Vendor | 市场 | 主要能力 | 安装命令 |
 |---|---|---|---|---|
+| wind-find-finance-skill | wind | 金融全域入口 | 读取本 llm-wiki，按用户问题推荐、安装或调用合适的金融 skill；不需要 API Key | `npx skills add JsonCodeChina/wind-skills --skill wind-find-finance-skill -g -y` |
 | [wind-quote-skill](./skills/wind-quote-skill.md) | wind | A 股、港股 | 实时行情 / K 线 / 分钟级 / 板块成分 | `npx skills add JsonCodeChina/wind-skills --skill wind-quote-skill -g -y` |
 | [wind-financial-data-skill](./skills/wind-financial-data-skill.md) | wind | A 股、港股 | 财务基本面 / 估值 / 宏观 / 公司文档（新闻 + 公告）| `npx skills add JsonCodeChina/wind-skills --skill wind-financial-data-skill -g -y` |
 
@@ -49,6 +50,7 @@ version: v1
 
 | 用户问题特征 | AI 应优先 Read |
 |---|---|
+| 刚安装入口 skill、需要判断该用哪个金融 skill | 先运行 `node scripts/cli.mjs route "<用户原始问题>"`，再读 route 返回的 `read_docs` |
 | 提到具体股票名 / 代码、问"价格 / 涨跌 / K 线" | [`categories/股票/行情.md`](./categories/股票/行情.md) |
 | 问"营收 / 利润 / 财报 / ROE / 增长率" | [`categories/股票/财务指标.md`](./categories/股票/财务指标.md) |
 | 问"PE / PB / 估值 / 股息率" | [`categories/股票/估值指标.md`](./categories/股票/估值指标.md) |
@@ -56,6 +58,7 @@ version: v1
 | 问"ESG 评分" | [`categories/股票/ESG.md`](./categories/股票/ESG.md) |
 | 问"GDP / CPI / 利率 / PMI" 等中国宏观 | [`categories/宏观经济.md`](./categories/宏观经济.md) |
 | 问"公告 / 年报 / 招股书 / 新闻" | [`skills/wind-financial-data-skill.md`](./skills/wind-financial-data-skill.md)（`get_financial_documents`）|
+| 问"研报 / 深度报告 / 行业报告" | [`skills/_coming_soon.md`](./skills/_coming_soon.md) —— 诚实告知"暂无收录" |
 | 问"沪深 300 / 板块 / 成分股" | [`categories/股票/行情.md`](./categories/股票/行情.md) 或 [`categories/指数/README.md`](./categories/指数/README.md) |
 | 问"美股 / 期货 / 外汇 / 加密货币 / 债券 ..." | 对应 placeholder `categories/<asset>/README.md` —— 诚实告知"暂无收录"|
 | 问"有什么 skill 可用 / 推荐工具" | 直接看上方"已开放 Skills"表 |
