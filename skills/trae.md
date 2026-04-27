@@ -2,43 +2,48 @@
 
 ## Usage with Trae IDE
 
-To use yyb-skill within Trae (ByteDance's AI IDE):
+### 直接通过 npx 调用（无需安装）
 
-### Direct CLI Invocation
-
-Trae's agent can execute shell commands. Instruct the agent:
+Trae 的 agent 可以执行 shell 命令，直接运行：
 
 ```
-Run `npx yyb-skill` to display a smiley face.
+npx git+https://gitee.com/codethe/yyb_skill.git
 ```
 
-### As a Trae Custom Tool
+### 作为 Trae 自定义工具配置
 
-1. Install the package in your project:
+1. 先安装到项目：
 
 ```bash
-npm install yyb-skill
+npm install git+https://gitee.com/codethe/yyb_skill.git
 ```
 
-2. Configure as a custom tool in Trae's `tools.json`:
+2. 在 Trae 的工具配置文件（`tools.json`）中添加：
 
 ```json
 {
   "tools": [
     {
       "name": "yyb-smiley",
-      "description": "Renders a colorful smiley face in the terminal",
+      "description": "在终端渲染一个彩色笑脸",
       "command": "npx",
-      "args": ["yyb-skill"],
+      "args": ["git+https://gitee.com/codethe/yyb_skill.git"],
       "type": "shell"
     }
   ]
 }
 ```
 
-3. The agent can then invoke the tool to render the smiley face.
+3. Agent 即可通过调用该工具来渲染笑脸。
 
-### Programmatic Usage
+### 全局安装后使用
+
+```bash
+npm install -g git+https://gitee.com/codethe/yyb_skill.git
+yyb-skill
+```
+
+### 编程调用
 
 ```javascript
 const { renderSmiley, renderSmileySimple } = require("yyb-skill");

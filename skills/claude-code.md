@@ -1,38 +1,51 @@
 # Claude Code Skill Definition
 
-## Installation
+## 使用方式
 
-Add this skill to your Claude Code project by running:
+### 方式一：直接通过 npx 运行（无需安装）
 
 ```bash
-# Install globally
-npm install -g yyb-skill
-
-# Or use directly with npx
-npx yyb-skill
+npx git+https://gitee.com/codethe/yyb_skill.git
 ```
 
-## Register as Claude Code Custom Command
+简洁模式：
 
-Copy the contents of `.claude/commands/smiley.md` into your project's `.claude/commands/` directory.
+```bash
+npx git+https://gitee.com/codethe/yyb_skill.git --simple
+```
 
-Then you can invoke it in Claude Code with:
+### 方式二：注册为 Claude Code 自定义命令
+
+将 `.claude/commands/smiley.md` 复制到你的项目 `.claude/commands/` 目录下。
+
+然后在 Claude Code 中输入：
 
 ```
 /smiley
 ```
 
-Or with simple mode:
+或简洁模式：
 
 ```
 /smiley simple
 ```
 
-## Programmatic Usage
+### 方式三：全局安装后使用
+
+```bash
+npm install -g git+https://gitee.com/codethe/yyb_skill.git
+yyb-skill
+```
+
+### 编程调用
+
+```bash
+npm install git+https://gitee.com/codethe/yyb_skill.git
+```
 
 ```javascript
 const { renderSmiley, renderSmileySimple } = require("yyb-skill");
 
-console.log(renderSmiley());       // Fancy mode
-console.log(renderSmileySimple()); // Simple mode
+console.log(renderSmiley());       // 花式模式
+console.log(renderSmileySimple()); // 简洁模式
 ```

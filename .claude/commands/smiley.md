@@ -11,13 +11,13 @@ Run the yyb-skill CLI tool to render a smiley face in the terminal.
 Execute the following command:
 
 ```bash
-npx yyb-skill
+npx git+https://gitee.com/codethe/yyb_skill.git
 ```
 
 If the user specifies "simple" mode, run:
 
 ```bash
-npx yyb-skill --simple
+npx git+https://gitee.com/codethe/yyb_skill.git --simple
 ```
 
 After running the command, show the output to the user. The tool renders a colorful ASCII smiley face with box-drawing characters.

@@ -2,19 +2,29 @@
 
 ## Usage with OpenAI Codex
 
-To use yyb-skill as a tool in Codex, add the following to your Codex configuration:
+### 直接通过 npx 调用（无需安装）
 
-### As a Shell Command Tool
-
-Codex can invoke yyb-skill as a shell command:
+Codex 可以直接通过 shell 命令调用：
 
 ```bash
-npx yyb-skill
+npx git+https://gitee.com/codethe/yyb_skill.git
 ```
 
-### Integration via package.json script
+简洁模式：
 
-Add to your project's `package.json`:
+```bash
+npx git+https://gitee.com/codethe/yyb_skill.git --simple
+```
+
+### 通过 package.json script 集成
+
+先安装到项目：
+
+```bash
+npm install git+https://gitee.com/codethe/yyb_skill.git
+```
+
+然后在 `package.json` 中添加：
 
 ```json
 {
@@ -25,18 +35,17 @@ Add to your project's `package.json`:
 }
 ```
 
-Then Codex can run:
+之后 Codex 可以执行：
 
 ```bash
 npm run smiley
 ```
 
-### Programmatic API
+### 编程调用
 
 ```javascript
 const { renderSmiley, renderSmileySimple } = require("yyb-skill");
 
-// Returns a string with ANSI-colored smiley face
 const output = renderSmiley();
 console.log(output);
 ```
