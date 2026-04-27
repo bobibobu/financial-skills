@@ -1,10 +1,8 @@
 {
   "name": "yyb-skill",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A cross-platform CLI skill that renders a smiley face UX, supporting Claude Code, Codex, Trae and other AI tools",
-  "bin": {
-    "yyb-skill": "./bin/cli.js"
-  },
+  "bin": "./bin/cli.js",
   "main": "./src/index.js",
   "files": [
     "bin/",
