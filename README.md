@@ -4,58 +4,57 @@ A cross-platform CLI skill that renders a colorful smiley face UX in the termina
 
 > 本项目托管在 Gitee：https://gitee.com/codethe/yyb_skill
 
-## Quick Start
+## 一键安装
 
-无需安装，直接通过 npx 从 Gitee 运行：
+在你的项目根目录下运行：
 
 ```bash
-# 花式模式（默认）
 npx git+https://gitee.com/codethe/yyb_skill.git
-
-# 简洁模式
-npx git+https://gitee.com/codethe/yyb_skill.git --simple
 ```
 
-## 安装到本地
+这一条命令会自动完成以下所有操作：
+
+| 工具 | 自动安装的文件 |
+|------|---------------|
+| **Claude Code** | `.claude/commands/smiley.md` |
+| **Codex** | `.codex/yyb-smiley.md` |
+| **Trae** | `.trae/tools.json` |
+
+运行后会显示一个笑脸，表示安装成功。
+
+## 使用方式
+
+### Claude Code
+
+安装完成后，在 Claude Code 中直接输入：
+
+```
+/smiley
+```
+
+### Codex
+
+在 Codex 的对话中让它执行：
 
 ```bash
-# 从 Gitee 安装到全局
-npm install -g git+https://gitee.com/codethe/yyb_skill.git
-
-# 安装后即可直接使用
-yyb-skill
-yyb-skill --simple
+npx git+https://gitee.com/codethe/yyb_skill.git
 ```
 
-或者克隆后本地安装：
+或者安装完成后 Codex 可读取 `.codex/yyb-smiley.md` 了解调用方式。
+
+### Trae
+
+安装完成后，`.trae/tools.json` 已自动配置好工具定义，Trae 可直接识别并调用。
+
+### 任何支持 shell 的工具
 
 ```bash
-git clone https://gitee.com/codethe/yyb_skill.git
-cd yyb_skill
-npm install -g .
-yyb-skill
+npx git+https://gitee.com/codethe/yyb_skill.git
 ```
 
-或者作为项目依赖安装：
+## 输出效果
 
-```bash
-npm install git+https://gitee.com/codethe/yyb_skill.git
-```
-
-安装后可在 `package.json` 的 scripts 中使用：
-
-```json
-{
-  "scripts": {
-    "smiley": "yyb-skill",
-    "smiley:simple": "yyb-skill --simple"
-  }
-}
-```
-
-## Output
-
-### Fancy Mode (default)
+### 花式模式（默认）
 
 ```
 ╔══════════════════════════════════════════╗
@@ -80,7 +79,7 @@ npm install git+https://gitee.com/codethe/yyb_skill.git
 ╚══════════════════════════════════════════╝
 ```
 
-### Simple Mode (`--simple`)
+### 简洁模式（加 `--simple` 参数）
 
 ```
 😊 Hello from YYB Skill! 😊
@@ -96,51 +95,7 @@ npm install git+https://gitee.com/codethe/yyb_skill.git
   Claude Code · Codex · Trae Compatible
 ```
 
-## AI Tool Integration
-
-### Claude Code
-
-将 `.claude/commands/smiley.md` 复制到你项目的 `.claude/commands/` 目录中，然后在 Claude Code 中输入：
-
-```
-/smiley
-```
-
-该 skill 会自动执行：
-
-```bash
-npx git+https://gitee.com/codethe/yyb_skill.git
-```
-
-### OpenAI Codex
-
-Codex 可以直接通过 shell 命令调用：
-
-```bash
-npx git+https://gitee.com/codethe/yyb_skill.git
-```
-
-也可以在项目 `package.json` 中添加 script 后让 Codex 执行 `npm run smiley`。
-
-### Trae
-
-在 Trae 的自定义工具配置中使用：
-
-```json
-{
-  "tools": [
-    {
-      "name": "yyb-smiley",
-      "description": "在终端渲染一个彩色笑脸",
-      "command": "npx",
-      "args": ["git+https://gitee.com/codethe/yyb_skill.git"],
-      "type": "shell"
-    }
-  ]
-}
-```
-
-## Programmatic API
+## 编程调用
 
 ```bash
 npm install git+https://gitee.com/codethe/yyb_skill.git
