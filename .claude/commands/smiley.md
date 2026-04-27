@@ -1,23 +1,15 @@
 ---
-description: "Render a smiley face UX in the terminal using yyb-skill"
-arguments:
-  - name: mode
-    description: "Output mode: fancy (default) or simple"
-    required: false
+description: "在终端渲染一个笑脸 UX"
 ---
 
-Run the yyb-skill CLI tool to render a smiley face in the terminal.
-
-Execute the following command:
+执行以下命令渲染笑脸：
 
 ```bash
-npx git+https://gitee.com/codethe/yyb_skill.git
+node .yyb-skill/bin.js
 ```
 
-If the user specifies "simple" mode, run:
+简洁模式：
 
 ```bash
-npx git+https://gitee.com/codethe/yyb_skill.git --simple
+node .yyb-skill/bin.js --simple
 ```
-
-After running the command, show the output to the user. The tool renders a colorful ASCII smiley face with box-drawing characters.

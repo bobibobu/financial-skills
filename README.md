@@ -6,50 +6,52 @@ A cross-platform CLI skill that renders a colorful smiley face UX in the termina
 
 ## 一键安装
 
-在你的项目根目录下运行：
+在项目根目录运行一次：
 
 ```bash
 npx git+https://gitee.com/codethe/yyb_skill.git
 ```
 
-这一条命令会自动完成以下所有操作：
+这一条命令会自动完成：
 
-| 工具 | 自动安装的文件 |
-|------|---------------|
-| **Claude Code** | `.claude/commands/smiley.md` |
-| **Codex** | `.codex/yyb-smiley.md` |
-| **Trae** | `.trae/tools.json` |
+1. 安装本地可执行工具到 `.yyb-skill/` 目录
+2. 为各 AI 工具自动配置 skill 文件：
 
-运行后会显示一个笑脸，表示安装成功。
+| 工具 | 自动安装的文件 | 调用方式 |
+|------|---------------|---------|
+| **Claude Code** | `.claude/commands/smiley.md` | 输入 `/smiley` |
+| **Codex** | `.codex/yyb-smiley.md` | Agent 读取后执行 |
+| **Trae** | `.trae/tools.json` | 对话中说"使用 yyb-smiley 工具" |
+
+安装完成后**不再需要 npx 或网络**，所有调用都走本地 `node .yyb-skill/bin.js`。
 
 ## 使用方式
 
 ### Claude Code
 
-安装完成后，在 Claude Code 中直接输入：
-
 ```
 /smiley
 ```
 
-### Codex
-
-在 Codex 的对话中让它执行：
-
-```bash
-npx git+https://gitee.com/codethe/yyb_skill.git
-```
-
-或者安装完成后 Codex 可读取 `.codex/yyb-smiley.md` 了解调用方式。
-
 ### Trae
 
-安装完成后，`.trae/tools.json` 已自动配置好工具定义，Trae 可直接识别并调用。
+在对话中直接告诉 Agent：
+
+> 使用 yyb-smiley 工具
+
+### Codex
+
+让 Agent 执行：
+
+```bash
+node .yyb-skill/bin.js
+```
 
 ### 任何支持 shell 的工具
 
 ```bash
-npx git+https://gitee.com/codethe/yyb_skill.git
+node .yyb-skill/bin.js            # 花式模式
+node .yyb-skill/bin.js --simple   # 简洁模式
 ```
 
 ## 输出效果
@@ -79,7 +81,7 @@ npx git+https://gitee.com/codethe/yyb_skill.git
 ╚══════════════════════════════════════════╝
 ```
 
-### 简洁模式（加 `--simple` 参数）
+### 简洁模式（`--simple`）
 
 ```
 😊 Hello from YYB Skill! 😊
@@ -93,19 +95,6 @@ npx git+https://gitee.com/codethe/yyb_skill.git
   ╚══════════════╝
 
   Claude Code · Codex · Trae Compatible
-```
-
-## 编程调用
-
-```bash
-npm install git+https://gitee.com/codethe/yyb_skill.git
-```
-
-```javascript
-const { renderSmiley, renderSmileySimple } = require("yyb-skill");
-
-console.log(renderSmiley());       // 花式模式
-console.log(renderSmileySimple()); // 简洁模式
 ```
 
 ## License
