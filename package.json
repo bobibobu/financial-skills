@@ -1,0 +1,30 @@
+{
+  "name": "yyb-skill",
+  "version": "1.0.0",
+  "description": "A cross-platform CLI skill that renders a smiley face UX, supporting Claude Code, Codex, Trae and other AI tools",
+  "bin": {
+    "yyb-skill": "./bin/cli.js"
+  },
+  "main": "./src/index.js",
+  "files": [
+    "bin/",
+    "src/",
+    "skills/",
+    ".claude/"
+  ],
+  "keywords": [
+    "claude-code",
+    "codex",
+    "trae",
+    "skill",
+    "cli",
+    "smiley",
+    "ux"
+  ],
+  "author": "codethe",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/codethe/yyb_skill.git"
+  }
+}
