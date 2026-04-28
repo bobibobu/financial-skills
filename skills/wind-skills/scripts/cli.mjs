@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// wind-quote-skill · v0.3.0
-// 专题 skill：1:1 包装 vserver_wind_quote MCP server
-// 三命令：list-tools / call <tool_name> <params_json> / open-portal
+// wind-skills · v1.0.0
+// 合并版桥接 skill：万得行情 (quote) + 金融基本面 (financial-data) 两个 MCP server
+// 仿 ifind 模式：call(server_type, tool_name, params)，server_type 预留扩展点
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -9,14 +9,26 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
-const SKILL_VERSION = '0.3.0';
-const MCP_ENDPOINT = 'https://mcp.wind.com.cn/vserver_wind_quote/mcp/';
-const SERVER_ID = 'wind-quote';
+const SKILL_VERSION = '1.0.0';
+
+const SERVERS = {
+  quote: {
+    endpoint: 'https://mcp.wind.com.cn/vserver_wind_quote/mcp/',
+    cache_id: 'wind-quote',
+    label: 'Wind 行情',
+  },
+  'financial-data': {
+    endpoint: 'https://mcp.wind.com.cn/vserver_wind_financial_data/mcp/',
+    cache_id: 'wind-financial-data',
+    label: 'Wind 金融基本面 + RAG',
+  },
+  // 未来扩展：esg / alternative / trading ... 加一行即可
+};
+
 const PORTAL_URL = 'https://aimarket.wind.com.cn/#/user/overview';
 
 const SKILL_DIR = dirname(dirname(fileURLToPath(import.meta.url)));
 const CACHE_DIR = join(homedir(), '.cache', 'wind-aimarket', 'tools');
-const TOOLS_CACHE = join(CACHE_DIR, `${SERVER_ID}.json`);
 const TTL_MS = 24 * 60 * 60 * 1000;
 
 // ───── 工具函数 ─────
@@ -38,6 +50,17 @@ function fresh(path) {
 
 function ensureDir(path) {
   if (!existsSync(path)) mkdirSync(path, { recursive: true });
+}
+
+function getServer(server_type) {
+  const server = SERVERS[server_type];
+  if (!server) {
+    die(
+      `❌ 未知 server_type: ${server_type}\n` +
+      `可用: ${Object.keys(SERVERS).join(' / ')}`
+    );
+  }
+  return server;
 }
 
 // ───── 认证（三级兜底：env > skill config > 全局 config）─────
@@ -83,7 +106,8 @@ function parseSSE(text) {
   return JSON.parse(last);
 }
 
-async function mcpRequest(method, params, { timeoutMs = 60_000 } = {}) {
+async function mcpRequest(server_type, method, params, { timeoutMs = 60_000 } = {}) {
+  const server = getServer(server_type);
   const apiKey = getApiKey();
   const headers = {
     Authorization: `Bearer ${apiKey}`,
@@ -94,7 +118,7 @@ async function mcpRequest(method, params, { timeoutMs = 60_000 } = {}) {
   const body = JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params });
   let resp;
   try {
-    resp = await fetch(MCP_ENDPOINT, {
+    resp = await fetch(server.endpoint, {
       method: 'POST',
       headers,
       body,
@@ -103,7 +127,8 @@ async function mcpRequest(method, params, { timeoutMs = 60_000 } = {}) {
   } catch (err) {
     die(
       `❌ MCP 网络异常：${err.message}\n` +
-      `endpoint: ${MCP_ENDPOINT}\n` +
+      `server_type: ${server_type}\n` +
+      `endpoint: ${server.endpoint}\n` +
       `api key: ${maskKey(apiKey)}\n` +
       `可能原因：网络不通 / DNS / 代理拦截`
     );
@@ -116,7 +141,7 @@ async function mcpRequest(method, params, { timeoutMs = 60_000 } = {}) {
         : resp.status >= 500
         ? `服务端异常 → 稍后重试或查 status.wind.com.cn`
         : `检查参数构造`;
-    die(`❌ MCP HTTP ${resp.status} ${resp.statusText}\n提示：${hint}\napi key: ${maskKey(apiKey)}`);
+    die(`❌ MCP HTTP ${resp.status} ${resp.statusText}\nserver_type: ${server_type}\n提示：${hint}\napi key: ${maskKey(apiKey)}`);
   }
 
   const text = await resp.text();
@@ -124,35 +149,69 @@ async function mcpRequest(method, params, { timeoutMs = 60_000 } = {}) {
   try {
     payload = parseSSE(text);
   } catch (err) {
-    die(`❌ MCP 响应解析失败：${err.message}`);
+    die(`❌ MCP 响应解析失败 (${server_type})：${err.message}`);
   }
-  if (payload.error) die(`❌ MCP 协议错误：${JSON.stringify(payload.error)}`);
+  if (payload.error) die(`❌ MCP 协议错误 (${server_type})：${JSON.stringify(payload.error)}`);
   return payload.result;
 }
 
-async function mcpInitializeAndCall(method, params) {
-  await mcpRequest('initialize', {
+async function mcpInitializeAndCall(server_type, method, params) {
+  await mcpRequest(server_type, 'initialize', {
     protocolVersion: '2025-03-26',
     capabilities: {},
-    clientInfo: { name: 'wind-quote-skill', version: SKILL_VERSION },
+    clientInfo: { name: 'wind-skills', version: SKILL_VERSION },
   }, { timeoutMs: 30_000 });
 
-  return mcpRequest(method, params, { timeoutMs: 600_000 });
+  return mcpRequest(server_type, method, params, { timeoutMs: 600_000 });
 }
 
 // ───── 命令 ─────
 
-async function cmdListTools() {
-  if (fresh(TOOLS_CACHE)) {
-    const result = JSON.parse(readFileSync(TOOLS_CACHE, 'utf8'));
-    console.log(JSON.stringify({ ok: true, from_cache: true, ...result }, null, 2));
+async function cmdListTools(server_type) {
+  if (!server_type) {
+    die(
+      `❌ 用法：list-tools <server_type>\n` +
+      `可用 server_type: ${Object.keys(SERVERS).join(' / ')}`
+    );
+  }
+  const server = getServer(server_type);
+  const cacheFile = join(CACHE_DIR, `${server.cache_id}.json`);
+
+  if (fresh(cacheFile)) {
+    const result = JSON.parse(readFileSync(cacheFile, 'utf8'));
+    console.log(JSON.stringify({ ok: true, server_type, from_cache: true, ...result }, null, 2));
     return;
   }
 
-  const result = await mcpInitializeAndCall('tools/list', {});
+  const result = await mcpInitializeAndCall(server_type, 'tools/list', {});
   ensureDir(CACHE_DIR);
-  writeFileSync(TOOLS_CACHE, JSON.stringify(result, null, 2));
-  console.log(JSON.stringify({ ok: true, from_cache: false, ...result }, null, 2));
+  writeFileSync(cacheFile, JSON.stringify(result, null, 2));
+  console.log(JSON.stringify({ ok: true, server_type, from_cache: false, ...result }, null, 2));
+}
+
+async function cmdCall(server_type, toolName, paramsJson) {
+  if (!server_type || !toolName || !paramsJson) {
+    die(
+      `❌ 用法：call <server_type> <tool_name> '<params_json>'\n` +
+      `可用 server_type: ${Object.keys(SERVERS).join(' / ')}\n` +
+      `例：\n` +
+      `  call quote quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH"}'\n` +
+      `  call financial-data search_financial_data '{"question":"贵州茅台 2024 年 ROE"}'`
+    );
+  }
+
+  let args;
+  try {
+    args = JSON.parse(paramsJson);
+  } catch (e) {
+    die(`❌ params JSON 解析失败：${e.message}\n原文：${paramsJson}`);
+  }
+
+  const result = await mcpInitializeAndCall(server_type, 'tools/call', {
+    name: toolName,
+    arguments: args,
+  });
+  console.log(JSON.stringify({ ok: true, server_type, tool: toolName, ...result }, null, 2));
 }
 
 async function cmdOpenPortal() {
@@ -190,42 +249,27 @@ async function cmdOpenPortal() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function cmdCall(toolName, paramsJson) {
-  if (!toolName || !paramsJson) {
-    die(`❌ 用法：call <tool_name> <params_json>\n例：call quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH"}'`);
-  }
-
-  let args;
-  try {
-    args = JSON.parse(paramsJson);
-  } catch (e) {
-    die(`❌ params JSON 解析失败：${e.message}\n原文：${paramsJson}`);
-  }
-
-  const result = await mcpInitializeAndCall('tools/call', {
-    name: toolName,
-    arguments: args,
-  });
-  console.log(JSON.stringify({ ok: true, tool: toolName, ...result }, null, 2));
-}
-
 // ───── 主入口 ─────
 
 const [cmd, ...args] = process.argv.slice(2);
 
 const USAGE =
-  `wind-quote-skill v${SKILL_VERSION}\n` +
-  `专注 Wind 行情查询（MCP server: ${SERVER_ID}）\n\n` +
-  `用法：\n` +
-  `  cli.mjs list-tools\n` +
-  `  cli.mjs call <tool_name> '<params_json>'\n` +
-  `  cli.mjs open-portal              # 打开万得开发者中心拿 API Key\n\n` +
-  `先 list-tools 看可用工具，再 call 执行。\n` +
-  `典型：cli.mjs call quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE"}'`;
+  `wind-skills v${SKILL_VERSION}\n` +
+  `合并版桥接 skill: 万得行情 + 金融基本面（按 server_type 路由）\n\n` +
+  `用法:\n` +
+  `  cli.mjs list-tools <server_type>\n` +
+  `  cli.mjs call <server_type> <tool_name> '<params_json>'\n` +
+  `  cli.mjs open-portal                       # 打开万得开发者中心拿 API Key\n\n` +
+  `可用 server_type:\n` +
+  Object.entries(SERVERS).map(([k, v]) => `  ${k.padEnd(20)}${v.label}`).join('\n') + '\n\n' +
+  `典型:\n` +
+  `  cli.mjs list-tools quote\n` +
+  `  cli.mjs call quote quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE"}'\n` +
+  `  cli.mjs call financial-data search_financial_data '{"question":"贵州茅台 2024 年 ROE"}'`;
 
 const commands = {
-  'list-tools': () => cmdListTools(),
-  call: () => cmdCall(args[0], args[1]),
+  'list-tools': () => cmdListTools(args[0]),
+  call: () => cmdCall(args[0], args[1], args[2]),
   'open-portal': () => cmdOpenPortal(),
 };
 

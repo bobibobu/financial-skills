@@ -33,6 +33,7 @@ npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find
 
 | 名称 | 平台版本 | 一句话 |
 |---|---|---|
+| wind-skills | 1.0.0 | 万得行情 + 财务 + 文档 RAG（A 股 / 港股 / 中国宏观） |
 
 ### 金融分析
 
@@ -40,6 +41,17 @@ npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find
 
 | 名称 | 平台版本 | 一句话 |
 |---|---|---|
+| a-share-primary-theme-identification | 1.0.0 | A 股市场主线识别（题材周期 / 资金行为） |
+| backtest-expert | 1.0.0 | 量化策略系统化回测（压力测试） |
+| buffett | 1.0.0 | 巴菲特投资思维体系（护城河 / 安全边际） |
+| dcf-model | 1.0.0 | DCF 估值建模（WACC + 敏感性分析） |
+| earnings-analysis | 1.0.0 | 季报点评（beat/miss + 估值更新） |
+| equity-investment-thesis | 1.0.0 | 个股投资逻辑深度研究（券商研究员风格） |
+| market-environment-analysis | 1.0.0 | 全球市场环境分析（risk-on / risk-off） |
+| position-sizer | 1.0.0 | 仓位管理（风险 / Kelly / ATR） |
+| post-market-debrief | 1.0.0 | 盘后复盘（市场全景 / 主线轮动） |
+| theme-detector | 1.0.0 | 跨板块主题检测（FINVIZ + 生命周期） |
+| valuation-pricing-framework | 1.0.0 | 估值与定价框架（重估空间判断） |
 
 ---
 
