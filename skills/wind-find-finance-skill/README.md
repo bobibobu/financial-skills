@@ -21,8 +21,8 @@
 # GitHub
 npx skills add JsonCodeChina/wind-skills --skill wind-find-finance-skill -g -y
 
-# Gitee 镜像（国内，需先在 Gitee 账号添加 SSH key）
-npx skills add git@gitee.com:jsonCodeChina/wind-skills.git --skill wind-find-finance-skill -g -y
+# Gitee 镜像（国内）
+npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find-finance-skill -g -y
 ```
 
 **不需要 API Key** —— 本 skill 不调任何 MCP server，纯读文档。

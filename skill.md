@@ -18,10 +18,8 @@ npx skills add JsonCodeChina/wind-skills --skill wind-find-finance-skill -g -y
 国内（Gitee 镜像）：
 
 ```bash
-npx skills add git@gitee.com:jsonCodeChina/wind-skills.git --skill wind-find-finance-skill -g -y
+npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find-finance-skill -g -y
 ```
-
-> Gitee 通道用前需在 Gitee 账号添加 SSH key。
 
 ---
 
@@ -53,7 +51,7 @@ npx skills add git@gitee.com:jsonCodeChina/wind-skills.git --skill wind-find-fin
 # GitHub
 npx skills add JsonCodeChina/wind-skills --skill <skill-name> -g -y
 # Gitee
-npx skills add git@gitee.com:jsonCodeChina/wind-skills.git --skill <skill-name> -g -y
+npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill <skill-name> -g -y
 ```
 
 ## 升级所有已装 skill
