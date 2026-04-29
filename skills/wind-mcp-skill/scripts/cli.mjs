@@ -110,17 +110,81 @@ function getApiKey() {
   );
 }
 
-// ───── MCP 调用（裸 HTTP + JSON-RPC + SSE 拆包）─────
+// ───── 错误码体系 ─────
 
+// 错误码识别 + 处理建议（按 message 模式匹配）
+const ERROR_PATTERNS = [
+  ['RATE_LIMIT_DAILY',     /单日请求次数超限|daily.*limit/i,                       'API Key 当日请求额度已用尽。等次日 0 点刷新或换备用 Key。'],
+  ['BALANCE_INSUFFICIENT', /余额不足|请先充值|insufficient.*balance/i,             'API Key 计费余额不足。开发者中心充值或换备用 Key。'],
+  ['RATE_LIMIT_QPS',       /请求过于频繁|qps.*limit|too.*frequent/i,               '请求过于频繁。等几秒重试（可重试）。'],
+  ['BACKEND_BUG_STR_GET',  /'str' object has no attribute 'get'/,                  'economic_data 后端 bug：含具体年份/freq/beginDate 等高级参数时偶发。降级为简单 NL 问句重试（如 "中国GDP" / "近10年中国新能源汽车产销量"）。'],
+  ['KEY_INVALID',          /密钥无效|key.*invalid|unauthorized/i,                  'API Key 无效或过期 → 开发者中心重新生成。'],
+  ['NO_RESULTS',           /未获取到数据|"NO_RESULTS"/,                            '未获取到匹配数据。调整 question 关键词，或换工具/server 重试。'],
+];
+
+function inferErrorCode(msg) {
+  if (!msg) return 'UNKNOWN';
+  for (const [code, pat] of ERROR_PATTERNS) {
+    if (pat.test(msg)) return code;
+  }
+  return 'UNKNOWN';
+}
+
+function getErrorHint(code, fallback) {
+  for (const [c, , hint] of ERROR_PATTERNS) {
+    if (c === code) return hint;
+  }
+  return fallback || '未知错误，参考后端原文 + 联系万得支持。';
+}
+
+function formatError(code, backendMsg, ctx = {}) {
+  const { server_type, apiKey, extraHint } = ctx;
+  const hint = extraHint || getErrorHint(code);
+  return [
+    `❌ MCP 错误 [${code}]`,
+    ``,
+    server_type ? `server_type: ${server_type}` : '',
+    apiKey ? `api key:     ${maskKey(apiKey)}` : '',
+    `后端消息:    ${backendMsg}`,
+    `处理建议:    ${hint}`,
+  ].filter(Boolean).join('\n');
+}
+
+// ───── MCP 调用（裸 HTTP + JSON-RPC + 响应解析兼容 SSE/纯 JSON）─────
+
+// 万得后端响应有两种形态：
+// (1) 正常调用 → SSE 包装：event: message\ndata: {JSON-RPC}\n\n
+// (2) 限流 / 余额不足 / HTTP 5xx 等 → 纯 JSON：{...JSON-RPC}
 function parseSSE(text) {
+  const trimmed = text.trim();
+  // 形态 (2) 优先：纯 JSON
+  if (trimmed.startsWith('{')) {
+    try { return JSON.parse(trimmed); } catch {}
+  }
+  // 形态 (1)：SSE 包装，取最后一行 data: 后的 JSON
   const lines = text.split(/\r?\n/);
   let last = null;
   for (const line of lines) {
     if (line.startsWith('data: ')) last = line.slice(6);
   }
-  if (!last) throw new Error(`响应无 data 行，原文前 200 字符：${text.slice(0, 200)}`);
-  return JSON.parse(last);
+  if (last) {
+    try { return JSON.parse(last); } catch (e) {
+      throw new Error(`SSE data 行 JSON 解析失败：${e.message}。原文前 200 字符：${text.slice(0, 200)}`);
+    }
+  }
+  throw new Error(`响应格式无法识别（既非 SSE 也非纯 JSON）。原文前 200 字符：${text.slice(0, 200)}`);
 }
+
+// HTTP 状态码 → 错误码 + 提示
+const HTTP_ERROR_MAP = {
+  401: ['KEY_INVALID',          'API Key 无效或过期 → 开发者中心重新生成'],
+  403: ['KEY_FORBIDDEN_SERVER', 'API Key 权限不足或该 server 未订阅 → 开发者中心确认'],
+  429: ['RATE_LIMIT_QPS',       '请求过于频繁 → 等几秒重试'],
+  500: ['SERVER_5XX',           '服务端异常 → 稍后重试或查 status.wind.com.cn'],
+  502: ['SERVER_5XX',           '网关异常 → 稍后重试'],
+  503: ['SERVER_5XX',           '服务暂不可用 → 稍后重试'],
+  504: ['SERVER_5XX',           '网关超时 → 稍后重试，或减小请求复杂度'],
+};
 
 async function mcpRequest(server_type, method, params, { timeoutMs = 60_000 } = {}) {
   const server = getServer(server_type);
@@ -141,33 +205,72 @@ async function mcpRequest(server_type, method, params, { timeoutMs = 60_000 } = 
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (err) {
-    die(
-      `❌ MCP 网络异常：${err.message}\n` +
-      `server_type: ${server_type}\n` +
-      `endpoint: ${server.endpoint}\n` +
-      `api key: ${maskKey(apiKey)}\n` +
-      `可能原因：网络不通 / DNS / 代理拦截`
-    );
+    die(formatError('NETWORK_ERROR', err.message, {
+      server_type,
+      apiKey,
+      extraHint: '网络不通 / DNS 解析失败 / 代理拦截 / 超时。检查网络后重试。',
+    }));
   }
 
+  // ───── HTTP 层错误检测 ─────
   if (!resp.ok) {
-    const hint =
-      resp.status === 401 || resp.status === 403
-        ? `API Key 无效或过期 → 开发者中心重新生成`
-        : resp.status >= 500
-        ? `服务端异常 → 稍后重试或查 status.wind.com.cn`
-        : `检查参数构造`;
-    die(`❌ MCP HTTP ${resp.status} ${resp.statusText}\nserver_type: ${server_type}\n提示：${hint}\napi key: ${maskKey(apiKey)}`);
+    const bodyText = await resp.text().catch(() => '');
+    const [code, hint] = HTTP_ERROR_MAP[resp.status] || ['UNKNOWN', '检查参数构造'];
+    const detail = `HTTP ${resp.status} ${resp.statusText}` + (bodyText ? ` | body: ${bodyText.slice(0, 200)}` : '');
+    die(formatError(code, detail, { server_type, apiKey, extraHint: hint }));
   }
 
+  // ───── 响应解析（兼容 SSE / 纯 JSON）─────
   const text = await resp.text();
   let payload;
   try {
     payload = parseSSE(text);
   } catch (err) {
-    die(`❌ MCP 响应解析失败 (${server_type})：${err.message}`);
+    die(formatError('RESPONSE_PARSE_ERROR', err.message, {
+      server_type,
+      apiKey,
+      extraHint: '响应格式异常，可能是后端版本变更。把后端原文发给万得支持。',
+    }));
   }
-  if (payload.error) die(`❌ MCP 协议错误 (${server_type})：${JSON.stringify(payload.error)}`);
+
+  // ───── JSON-RPC 协议层错误 ─────
+  if (payload.error) {
+    const msg = payload.error.message || JSON.stringify(payload.error);
+    die(formatError('MCP_PROTOCOL_ERROR', msg, { server_type, apiKey }));
+  }
+
+  // ───── MCP 工具层错误（result.isError = true）─────
+  // 限流 / 余额不足 / 部分协议错误走这条路径
+  if (payload.result?.isError) {
+    const msg = payload.result.content?.[0]?.text || JSON.stringify(payload.result);
+    const code = inferErrorCode(msg);
+    die(formatError(code, msg, { server_type, apiKey }));
+  }
+
+  // ───── 工具内业务错误（content[0].text 内嵌 JSON 含 mcp_tool_error_code 或 error.code）─────
+  // 万得后端在 economic_data 等场景把 bug 包在嵌套 JSON 里；ok 状态会误导
+  const innerText = payload.result?.content?.[0]?.text;
+  if (typeof innerText === 'string') {
+    let inner;
+    try { inner = JSON.parse(innerText); } catch { inner = null; }
+    if (inner) {
+      // 万得专属：mcp_tool_error_code 非 0
+      if (typeof inner.mcp_tool_error_code === 'number' && inner.mcp_tool_error_code !== 0) {
+        const msg = inner.mcp_tool_error_msg || JSON.stringify(inner);
+        const code = inferErrorCode(msg);
+        die(formatError(code, msg, { server_type, apiKey }));
+      }
+      // 通用：含 error.code（如 NO_RESULTS）
+      if (inner.error && (inner.error.code || inner.error.message)) {
+        const errCode = inner.error.code || '';
+        const errMsg = inner.error.message || '';
+        const combined = errCode ? `${errCode}: ${errMsg}` : errMsg;
+        const code = inferErrorCode(combined);
+        die(formatError(code, combined, { server_type, apiKey }));
+      }
+    }
+  }
+
   return payload.result;
 }
 
