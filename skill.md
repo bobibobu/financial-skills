@@ -33,7 +33,7 @@ npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find
 
 | 名称 | 平台版本 | 一句话 |
 |---|---|---|
-| wind-skills | 1.1.0 | 万得 6 server / 19 工具：行情 + 基金 + 股票 + 文档 RAG + 宏观 + 通用分析（A 股 / 港股 / 中国宏观） |
+| wind-mcp-skill | 1.1.0 | 万得 6 server / 19 工具：行情 + 基金 + 股票 + 文档 RAG + 宏观 + 通用分析（A 股 / 港股 / 中国宏观） |
 
 ### 金融分析
 

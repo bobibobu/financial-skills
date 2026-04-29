@@ -1,6 +1,6 @@
-# wind-skills
+# wind-mcp-skill
 
-> Wind 万得金融数据合并桥接 skill · v1.1.0 · 6 server / 19 工具
+> Wind 万得 MCP 数据桥接 skill · v1.1.0 · 6 server / 19 工具
 
 仿同花顺 ifind 模式：单 skill 包多 MCP server，按 `server_type` 路由。覆盖 Wind 行情 / 基金 / 股票 / 金融文档 / 宏观经济 / 通用分析。
 
@@ -10,10 +10,10 @@
 
 ```bash
 # GitHub
-npx skills add JsonCodeChina/wind-skills --skill wind-skills -g -y
+npx skills add JsonCodeChina/wind-skills --skill wind-mcp-skill -g -y
 
 # Gitee 镜像（国内）
-npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-skills -g -y
+npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-mcp-skill -g -y
 ```
 
 需要 `WIND_API_KEY`（登录 https://aimarket.wind.com.cn 开发者中心获取）。

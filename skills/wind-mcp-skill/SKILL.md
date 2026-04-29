@@ -1,13 +1,13 @@
 ---
-name: wind-skills
+name: wind-mcp-skill
 description: >-
-  Wind 万得金融数据合并桥接 skill（v1.1.0，6 server / 19 工具）。按 `server_type` 路由：(1) `quote` 行情类（A 股 / 港股快照、K 线日 / 周 / 月、分钟）；(2) `fund_data` 基金类（档案 / 财务 / 持仓 / 业绩 / 持有人 / 公司）；(3) `stock_data` 股票深度（档案 / 财务基本面 / 股本 / 事件 / 技术指标 / 风险）；(4) `financial_docs` 文档 RAG（公告 / 财经新闻）；(5) `economic_data` EDB 宏观 + 行业经济指标；(6) `analytics_data` 通用 NL → Wind 数据。需要 WIND_API_KEY（登录 aimarket.wind.com.cn 开发者中心获取）。触发场景：A 股 / 港股代码 / K 线 / 分钟、基金任何维度、股票财报 / 估值、上市公司公告 / 财经新闻、宏观经济数据、跨标的对比。**不包含**：美股 / 欧股 / 日股、汇率 / 期货盘口、加密货币、非金融数据。
+  Wind 万得 MCP 数据桥接 skill（v1.1.0，6 server / 19 工具）。按 `server_type` 路由：(1) `quote` 行情类（A 股 / 港股快照、K 线日 / 周 / 月、分钟）；(2) `fund_data` 基金类（档案 / 财务 / 持仓 / 业绩 / 持有人 / 公司）；(3) `stock_data` 股票深度（档案 / 财务基本面 / 股本 / 事件 / 技术指标 / 风险）；(4) `financial_docs` 文档 RAG（公告 / 财经新闻）；(5) `economic_data` EDB 宏观 + 行业经济指标；(6) `analytics_data` 通用 NL → Wind 数据。需要 WIND_API_KEY（登录 aimarket.wind.com.cn 开发者中心获取）。触发场景：A 股 / 港股代码 / K 线 / 分钟、基金任何维度、股票财报 / 估值、上市公司公告 / 财经新闻、宏观经济数据、跨标的对比。**不包含**：美股 / 欧股 / 日股、汇率 / 期货盘口、加密货币、非金融数据。
 version: 1.1.0
 author: Wind AIMarket
 homepage: https://aimarket.wind.com.cn
 ---
 
-# Wind 万得数据（合并版 v1.1.0）
+# Wind 万得 MCP 数据桥接（v1.1.0）
 
 本 skill 合并万得 6 个 MCP server，按 `server_type` 路由调用，共 19 个工具。
 

@@ -37,4 +37,4 @@ npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill <skill-na
 
 # 不触发场景
 
-用户已明确说要用某个具体 skill（"用 wind-skills 查茅台" / "用 buffett 分析这家公司"）→ 直接走那个 skill，不绕本入口。
+用户已明确说要用某个具体 skill（"用 wind-mcp-skill 查茅台" / "用 buffett 分析这家公司"）→ 直接走那个 skill，不绕本入口。

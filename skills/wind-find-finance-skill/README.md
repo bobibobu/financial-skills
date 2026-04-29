@@ -47,7 +47,7 @@ wind-find-finance-skill/
 
 本 skill 是 **meta-skill**，跟数据 skill 的区别：
 
-| 维度 | 数据 skill（如 wind-skills） | 本 skill |
+| 维度 | 数据 skill（如 wind-mcp-skill） | 本 skill |
 |---|---|---|
 | 调底层 MCP server | ✅ | ❌ |
 | 需要 WIND_API_KEY | ✅ | ❌ |

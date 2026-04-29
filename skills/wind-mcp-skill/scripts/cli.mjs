@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// wind-skills · v1.1.0
-// 合并版桥接 skill：万得 6 个 MCP server（quote / fund_data / financial_docs / stock_data / economic_data / analytics_data）
+// wind-mcp-skill · v1.1.0
+// 万得 MCP 数据桥接：6 个 MCP server（quote / fund_data / financial_docs / stock_data / economic_data / analytics_data）
 // 仿 ifind 模式：call(server_type, tool_name, params)，server_type 可扩展
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
@@ -178,7 +178,7 @@ async function mcpInitializeAndCall(server_type, method, params) {
   await mcpRequest(server_type, 'initialize', {
     protocolVersion: '2025-03-26',
     capabilities: {},
-    clientInfo: { name: 'wind-skills', version: SKILL_VERSION },
+    clientInfo: { name: 'wind-mcp-skill', version: SKILL_VERSION },
   }, { timeoutMs: 30_000 });
 
   return mcpRequest(server_type, method, params, { timeoutMs: 600_000 });
@@ -277,8 +277,8 @@ async function cmdOpenPortal() {
 const [cmd, ...args] = process.argv.slice(2);
 
 const USAGE =
-  `wind-skills v${SKILL_VERSION}\n` +
-  `合并版桥接 skill: 万得行情 + 金融基本面（按 server_type 路由）\n\n` +
+  `wind-mcp-skill v${SKILL_VERSION}\n` +
+  `万得 MCP 数据桥接: 6 server / 19 工具（按 server_type 路由）\n\n` +
   `用法:\n` +
   `  cli.mjs list-tools <server_type>\n` +
   `  cli.mjs call <server_type> <tool_name> '<params_json>'\n` +

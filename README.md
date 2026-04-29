@@ -6,14 +6,14 @@
 
 ---
 
-## 📦 收录的 Skill（v6.0.1 + wind-skills v1.1.0）
+## 📦 收录的 Skill（v6.0.1 + wind-mcp-skill v1.1.0）
 
 ### 数据发现类
 
 | Skill | 能力域 |
 |---|---|
 | [`wind-find-finance-skill`](./skills/wind-find-finance-skill) | **金融能力入口**：列举平台所有 skill 并按用户问题推荐，引导安装 / 升级 |
-| [`wind-skills`](./skills/wind-skills) | **Wind 6 server / 19 工具合并桥接**：行情 / 基金 / 股票 / 文档 RAG / 宏观 / 通用分析 |
+| [`wind-mcp-skill`](./skills/wind-mcp-skill) | **Wind 6 server / 19 工具 MCP 数据桥接**：行情 / 基金 / 股票 / 文档 RAG / 宏观 / 通用分析 |
 
 ### 金融分析类（社区 winus 收录）
 
@@ -32,7 +32,7 @@
 | [`valuation-pricing-framework`](./skills/valuation-pricing-framework) | 估值与定价框架（重估空间判断） |
 
 > `wind-find-finance-skill` 是入口型 meta-skill，不调 MCP server、不需要 API Key。
-> `wind-skills` 仿同花顺 ifind 模式：单 skill 包多 MCP server，按 `server_type` 路由调用。
+> `wind-mcp-skill` 仿同花顺 ifind 模式：单 skill 包多 MCP server，按 `server_type` 路由调用。
 
 ---
 
@@ -74,11 +74,11 @@ npx skills add JsonCodeChina/wind-skills --list
 
 ---
 
-## 🔑 配置 API Key（仅 wind-skills 需要）
+## 🔑 配置 API Key（仅 wind-mcp-skill 需要）
 
 ### 让 AI 帮你打开开发者中心拿 Key（推荐）
 
-装好 wind-skills 后，第一次问行情 / 财务问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 在 skill 目录下运行：
+装好 wind-mcp-skill 后，第一次问行情 / 财务问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 在 skill 目录下运行：
 
 ```bash
 node scripts/cli.mjs open-portal
@@ -103,7 +103,7 @@ mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/confi
 
 ---
 
-## 🧭 wind-skills 的 server_type 选择守则
+## 🧭 wind-mcp-skill 的 server_type 选择守则
 
 | 你想问 | server_type |
 |---|---|
@@ -114,7 +114,7 @@ mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/confi
 | **GDP / CPI / M2 / 行业经济**指标 | `economic_data` |
 | 不确定 / 跨域综合查询 | `analytics_data` |
 
-更详细的工具表见 [`skills/wind-skills/SKILL.md`](./skills/wind-skills/SKILL.md)。
+更详细的工具表见 [`skills/wind-mcp-skill/SKILL.md`](./skills/wind-mcp-skill/SKILL.md)。
 
 ---
 
@@ -126,7 +126,7 @@ wind-skills/
 ├── skill.md                        ← 面向 AI Agent 的站点级入口引导
 └── skills/                         ← 所有 skill 直接平铺，对齐 npx skills 协议
     ├── wind-find-finance-skill/    ← 入口（无 cli.mjs，纯 SKILL.md + references）
-    ├── wind-skills/                ← 数据合并版（仿 ifind，6 server / 19 工具）
+    ├── wind-mcp-skill/             ← 数据桥接版（仿 ifind，6 server / 19 工具）
     ├── a-share-primary-theme-identification/
     ├── backtest-expert/
     ├── buffett/
@@ -156,7 +156,7 @@ wind-skills/
 ## 🗺️ 路线图
 
 - [x] v6.0 架构反转：cli.mjs 砍掉，AI 守则驱动升级感知
-- [x] wind-skills v1.1.0：6 server / 19 工具合并桥接
+- [x] wind-mcp-skill v1.1.0：6 server / 19 工具 MCP 数据桥接
 - [ ] 收录同花顺 ifind 两个 zip（数据发现增至 3 个）
 - [ ] 触发率回归测试集（50 条真实金融问句）
 - [ ] 将 `skill.md` 发布到 `https://aimarket.wind.com.cn/skill.md`
