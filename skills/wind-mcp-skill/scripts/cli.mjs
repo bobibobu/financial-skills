@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// wind-mcp-skill · v1.3.0
-// 万得 MCP 数据桥接：5 个 MCP server / 22 工具（fund_data / financial_docs / stock_data / economic_data / analytics_data）
-// 统一调用入口 call(server_type, tool_name, params)，server_type 可扩展
-// 注：fund_data / stock_data 各包含行情类工具（price_indicators / kline / quote）+ NL 类工具（财务 / 档案等）
+// wind-mcp-skill
+// 访问万得 Wind 金融数据 — 按数据域分类调用
+// SERVERS: fund_data / financial_docs / stock_data / economic_data / analytics_data
+// 调用签名: call(server_type, tool_name, params)
+// 注: fund_data / stock_data 各包含行情类工具(*_price_indicators / *_kline / *_quote) + NL 类工具(财务 / 档案等),入参模式不同,见 SKILL.md 工具表
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -272,8 +273,8 @@ async function cmdOpenPortal() {
 const [cmd, ...args] = process.argv.slice(2);
 
 const USAGE =
-  `wind-mcp-skill v${SKILL_VERSION}\n` +
-  `万得 MCP 数据桥接: 5 server / 22 工具（按 server_type 路由）\n\n` +
+  `wind-mcp-skill\n` +
+  `访问万得 Wind 金融数据（按数据域分类调用）\n\n` +
   `用法:\n` +
   `  cli.mjs list-tools <server_type>\n` +
   `  cli.mjs call <server_type> <tool_name> '<params_json>'\n` +

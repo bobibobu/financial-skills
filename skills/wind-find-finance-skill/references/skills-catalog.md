@@ -16,7 +16,7 @@ description: AIMarket 平台 skill 清单本地副本。由 npx skills update -g
 
 | 名称 | category | 装好需配置 | 一句话 |
 |---|---|---|---|
-| wind-mcp-skill | 数据-行情/基金/股票/宏观/文档 | API Key | 万得 5 server / 22 工具:基金(含 ETF 行情) + 股票(含行情) + 公告新闻 + 宏观 EDB + 通用 NL(A 股 / 港股 / 中国宏观) |
+| wind-mcp-skill | 数据-行情/基金/股票/宏观/文档 | API Key | 访问万得 Wind 金融数据:A 股 / 港股股票(行情与财务) + ETF / 公募基金(行情与全维数据) + 公司公告 + 财经新闻 + 宏观经济指标 |
 
 ---
 

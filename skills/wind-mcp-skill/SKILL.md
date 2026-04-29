@@ -1,8 +1,7 @@
 ---
 name: wind-mcp-skill
 description: >-
-  Wind 万得 MCP 数据桥接 skill（v1.3.0，5 server / 22 工具）。按 `server_type` 路由：(1) `fund_data` 基金类（档案 / 财务 / 持仓 / 业绩 / 持有人 / 公司 + 基金 ETF 行情 / K 线 / 分钟）；(2) `stock_data` 股票类（档案 / 财务基本面 / 股本 / 事件 / 技术指标 / 风险 + 股票行情 / K 线 / 分钟）；(3) `financial_docs` 文档 RAG（公告 / 财经新闻）；(4) `economic_data` EDB 宏观 + 行业经济指标；(5) `analytics_data` 通用 NL → Wind 数据。需要 WIND_API_KEY（登录 aimarket.wind.com.cn 开发者中心获取）。触发场景：A 股 / 港股代码行情 / K 线 / 分钟、基金 ETF 行情、基金任何维度、股票财报 / 估值、上市公司公告 / 财经新闻、宏观经济数据、跨标的对比。**不包含**：美股 / 欧股 / 日股、汇率 / 期货盘口、加密货币、非金融数据。
-version: 1.3.0
+  访问万得 Wind 金融数据。覆盖 A 股 / 港股股票行情（最新价 / K 线 / 分钟）与财务基本面（财报 / 股本 / 事件 / 技术指标 / 风险）、ETF / 公募基金行情与全维数据（档案 / 财务 / 持仓 / 业绩 / 持有人 / 管理公司）、上市公司公告与财经新闻、宏观经济与行业指标。需要 WIND_API_KEY（登录 aimarket.wind.com.cn 开发者中心获取）。**不包含**：美股 / 欧股 / 日股、汇率 / 期货盘口、加密货币、非金融数据。
 author: Wind AIMarket
 homepage: https://aimarket.wind.com.cn
 auto_invoke: true
@@ -23,9 +22,9 @@ examples:
   - "贵州茅台前十大股东"
 ---
 
-# Wind 万得 MCP 数据桥接（v1.3.0）
+# Wind 万得金融数据
 
-本 skill 通过统一调用入口接入万得 5 个 MCP server，按 `server_type` 路由调用，共 22 个工具。
+访问万得 Wind 金融数据：股票（行情与财务基本面）、基金（行情与全维数据）、上市公司公告与新闻、宏观经济指标。
 
 > ⚠️ **关键约束 · 运行环境**：所有 `node scripts/cli.mjs ...` 命令**必须在本 skill 根目录下运行**（cwd = skill 安装路径）。脚本依赖相对路径加载 `config.json`、写 `~/.cache/wind-aimarket/tools/` 缓存。常见安装路径：`~/.claude/skills/wind-mcp-skill/`、`~/.agents/skills/wind-mcp-skill/`、`~/.openclaw/workspace/skills/wind-mcp-skill/`。**调用前必须先 `cd` 进 skill 根。**
 
@@ -80,9 +79,9 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
 2. 同意后跑：`node scripts/cli.mjs open-portal`
 3. 用户登录 / 拿 Key 后，按 cli.mjs 提示三选一配置（推荐 C：全局 `~/.wind-aimarket/config`，所有 wind skill 共享）
 
-## 工具表（5 server / 22 工具）
+## 工具表
 
-### server_type=fund_data（9 个）
+### server_type=fund_data
 
 **行情类（3 个，结构化代码参数 `{windcode, ...}`）：**
 
@@ -103,7 +102,7 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
 | `get_fund_shareholders` | 持有人结构（个人 / 机构 / 申购赎回 / 规模变动） |
 | `get_fund_company_info` | 基金管理公司档案 + 经理团队指标 |
 
-### server_type=stock_data（9 个）
+### server_type=stock_data
 
 **行情类（3 个，结构化代码参数 `{windcode, ...}`）：**
 
@@ -124,14 +123,14 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
 | `get_stock_technicals` | 技术指标 + 交易（涨跌幅 / MACD / KDJ / RSI / BOLL / 融资融券 / 龙虎榜 / 涨跌停） |
 | `get_risk_metrics` | 风险指标（Beta / Jensen Alpha / 波动率 / Sharpe） |
 
-### server_type=financial_docs（2 个，文档 RAG）
+### server_type=financial_docs（文档检索）
 
 | 工具 | 说明 | 入参 |
 |---|---|---|
 | `get_company_announcements` | 公司公告 / 监管文件 / 招股书 / 业绩公告 / 致股东信 | `query`（必填）+ `top_k / start_date / end_date` |
 | `get_financial_news` | 财经新闻报道 | 同上 |
 
-### server_type=economic_data（1 个，EDB 宏观 / 行业）
+### server_type=economic_data（宏观 / 行业指标）
 
 | 工具 | 说明 | 入参 |
 |---|---|---|
@@ -139,7 +138,7 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
 
 > ⚠️ **当前后端 bug**：含具体年份 / freq / beginDate 等高级参数时偶发 `'str' object has no attribute 'get'` 报错（已反馈万得后端，2026-04-29）。**简单 NL 问句稳定通过**（例：`"中国GDP"` / `"近10年中国新能源汽车产销量"`）。
 
-### server_type=analytics_data（1 个，通用 NL fallback）
+### server_type=analytics_data（通用兜底）
 
 入参：`{question, lang?, version?}`。
 

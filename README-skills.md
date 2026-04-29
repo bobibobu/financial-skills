@@ -37,7 +37,7 @@ npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find
 ## 路径 B:直接装 Wind 万得数据 skill
 
 > 适合:已知要用 Wind 数据 / 重度查询用户。
-> 覆盖 5 大类 / 22 个工具:基金(含 ETF 行情) · 股票(含行情) · 公告新闻 · 宏观 EDB · 通用 NL。
+> 覆盖股票(行情与财务) · 基金(行情与全维数据) · 公司公告 · 财经新闻 · 宏观经济指标。
 
 ### Step 1 — 装 skill 包
 

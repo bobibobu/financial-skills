@@ -6,14 +6,14 @@
 
 ---
 
-## 📦 收录的 Skill（v6.0.4 + wind-mcp-skill v1.3.0）
+## 📦 收录的 Skill
 
 ### 数据发现类
 
 | Skill | 能力域 |
 |---|---|
 | [`wind-find-finance-skill`](./skills/wind-find-finance-skill) | **金融能力入口**：列举平台所有 skill 并按用户问题推荐，引导安装 / 升级 |
-| [`wind-mcp-skill`](./skills/wind-mcp-skill) | **Wind 5 server / 22 工具 MCP 数据桥接**：基金（含 ETF 行情）/ 股票（含行情）/ 文档 RAG / 宏观 / 通用 NL 分析 |
+| [`wind-mcp-skill`](./skills/wind-mcp-skill) | **访问万得 Wind 金融数据**：股票（行情与财务）、基金（行情与全维数据）、公司公告与新闻、宏观经济指标 |
 
 ### 金融分析类（社区 winus 收录）
 
@@ -32,7 +32,7 @@
 | [`valuation-pricing-framework`](./skills/valuation-pricing-framework) | 估值与定价框架（重估空间判断） |
 
 > `wind-find-finance-skill` 是入口型 meta-skill，不调 MCP server、不需要 API Key。
-> `wind-mcp-skill` 通过统一调用入口接入万得 5 个 MCP server，按 `server_type` 路由调用。
+> `wind-mcp-skill` 用于访问万得 Wind 金融数据，按数据域分类调用。
 
 ---
 
@@ -129,7 +129,7 @@ wind-skills/
 ├── skill.md                        ← 面向 AI Agent 的站点级入口引导
 └── skills/                         ← 所有 skill 直接平铺，对齐 npx skills 协议
     ├── wind-find-finance-skill/    ← 入口（无 cli.mjs，纯 SKILL.md + references）
-    ├── wind-mcp-skill/             ← 数据桥接（5 server / 22 工具，含行情）
+    ├── wind-mcp-skill/             ← 万得 Wind 金融数据访问
     ├── a-share-primary-theme-identification/
     ├── backtest-expert/
     ├── buffett/
@@ -158,12 +158,12 @@ wind-skills/
 
 ## 🗺️ 路线图
 
-- [x] v6.0 架构反转：纯 SKILL.md + references 守则驱动，无 cli.mjs 路由层
-- [x] wind-mcp-skill v1.3.0：5 server / 22 工具 MCP 数据桥接（行情按品种重组到 fund_data / stock_data）
-- [x] 顶层 `README-skills.md` 极简化双路径引导（替代旧 `skill.md`）
+- [x] 全平台 SKILL.md 守则驱动，AI 按问题自动路由
+- [x] wind-mcp-skill：访问万得 Wind 全维金融数据
+- [x] 顶层 `README-skills.md` 双路径引导（发现器 / 直接装数据 skill）
 - [ ] 触发率回归测试集（50 条真实金融问句）
 - [ ] 将 `README-skills.md` 发布到 `https://aimarket.wind.com.cn/`
-- [ ] 评估收录第三方数据源作为可选数据 skill（视产品策略而定）
+- [ ] 评估收录第三方数据源作为可选数据 skill
 
 ---
 
