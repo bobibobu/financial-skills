@@ -1,20 +1,38 @@
 # wind-skills
 
-> **Wind 万得金融 Skill 集合（monorepo）** · 通过 MCP 协议把万得金融数据接入 Claude / OpenClaw / Hermes 等 AI Agent
+> **Wind 万得金融 Skill 集合（monorepo）** · 通过 MCP 协议把万得金融数据接入 Claude / OpenClaw / Hermes 等 AI Agent，并一站式收录 wind 自家 + 同花顺 + 社区共 13+ 个金融 skill
 
 [![GitHub](https://img.shields.io/badge/GitHub-JsonCodeChina%2Fwind--skills-blue?logo=github)](https://github.com/JsonCodeChina/wind-skills)
 
 ---
 
-## 📦 收录的 Skill
+## 📦 收录的 Skill（v6.0.1 + wind-skills v1.1.0）
 
-| Skill | 能力域 | 状态 |
-|---|---|---|
-| [`wind-find-finance-skill`](./skills/wind-find-finance-skill) | **金融能力入口 / llm-wiki router**：按用户问题推荐、安装或调用合适的金融 skill | ✅ v0.2.0 |
-| [`wind-quote-skill`](./skills/wind-quote-skill) | 中国 A 股 / 港股**实时行情**、K 线、分钟级、万得板块成分 | ✅ v0.2.0 |
-| [`wind-financial-data-skill`](./skills/wind-financial-data-skill) | **金融基本面数据**（财报、估值、宏观）+ **金融文档检索**（新闻 / 公告 / 年报 / 招股书；研报暂未开放）| ✅ v0.1.0 |
+### 数据发现类
 
-> `wind-find-finance-skill` 是入口型 meta-skill，不调 MCP server、不需要 API Key；其他数据 skill 1:1 封装 Wind MCP server，专题单一职责，互不重叠。
+| Skill | 能力域 |
+|---|---|
+| [`wind-find-finance-skill`](./skills/wind-find-finance-skill) | **金融能力入口**：列举平台所有 skill 并按用户问题推荐，引导安装 / 升级 |
+| [`wind-skills`](./skills/wind-skills) | **Wind 6 server / 19 工具合并桥接**：行情 / 基金 / 股票 / 文档 RAG / 宏观 / 通用分析 |
+
+### 金融分析类（社区 winus 收录）
+
+| Skill | 一句话 |
+|---|---|
+| [`a-share-primary-theme-identification`](./skills/a-share-primary-theme-identification) | A 股市场主线识别（题材周期 / 资金行为） |
+| [`backtest-expert`](./skills/backtest-expert) | 量化策略系统化回测（压力测试） |
+| [`buffett`](./skills/buffett) | 巴菲特投资思维体系（护城河 / 安全边际） |
+| [`dcf-model`](./skills/dcf-model) | DCF 估值建模（WACC + 敏感性分析） |
+| [`earnings-analysis`](./skills/earnings-analysis) | 季报点评（beat/miss + 估值更新） |
+| [`equity-investment-thesis`](./skills/equity-investment-thesis) | 个股投资逻辑深度研究（券商研究员风格） |
+| [`market-environment-analysis`](./skills/market-environment-analysis) | 全球市场环境分析（risk-on / risk-off） |
+| [`position-sizer`](./skills/position-sizer) | 仓位管理（风险 / Kelly / ATR） |
+| [`post-market-debrief`](./skills/post-market-debrief) | 盘后复盘（市场全景 / 主线轮动） |
+| [`theme-detector`](./skills/theme-detector) | 跨板块主题检测（FINVIZ + 生命周期） |
+| [`valuation-pricing-framework`](./skills/valuation-pricing-framework) | 估值与定价框架（重估空间判断） |
+
+> `wind-find-finance-skill` 是入口型 meta-skill，不调 MCP server、不需要 API Key。
+> `wind-skills` 仿同花顺 ifind 模式：单 skill 包多 MCP server，按 `server_type` 路由调用。
 
 ---
 
@@ -23,10 +41,14 @@
 ### 推荐入口：先装金融能力发现器
 
 ```bash
+# GitHub
 npx skills add JsonCodeChina/wind-skills --skill wind-find-finance-skill -g -y
+
+# Gitee 镜像（国内）
+npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find-finance-skill -g -y
 ```
 
-装好后，用户直接问金融问题即可。AI 会通过内置 llm-wiki 判断应该安装 / 调用哪个金融 skill；当前支持 `wind-quote-skill` 与 `wind-financial-data-skill`，未开放方向会诚实告知。
+装好后，用户直接问金融问题即可。AI 会通过 SKILL.md 守则按用户问题筛 1-3 个相关 skill 推荐安装。
 
 机器可读引导文件见 [`skill.md`](./skill.md)。可发布到：
 
@@ -34,21 +56,13 @@ npx skills add JsonCodeChina/wind-skills --skill wind-find-finance-skill -g -y
 https://aimarket.wind.com.cn/skill.md
 ```
 
-### 装单个数据 skill
+### 装单个 skill
 
 ```bash
-# 行情
-npx skills add JsonCodeChina/wind-skills --skill wind-quote-skill -g -y
-
-# 财务数据 + 文档检索
-npx skills add JsonCodeChina/wind-skills --skill wind-financial-data-skill -g -y
+npx skills add JsonCodeChina/wind-skills --skill <skill-name> -g -y
 ```
 
-### 全部装上
-
-```bash
-npx skills add JsonCodeChina/wind-skills -g -y
-```
+把 `<skill-name>` 换成上方表格里的任意 Skill 名称即可。
 
 ### 列出仓库内所有可装 skill
 
@@ -60,27 +74,22 @@ npx skills add JsonCodeChina/wind-skills --list
 
 ---
 
-## 🔑 配置 API Key（一次配置，全系列共享）
+## 🔑 配置 API Key（仅 wind-skills 需要）
 
 ### 让 AI 帮你打开开发者中心拿 Key（推荐）
 
-装好 skill 后，第一次问行情 / 财务问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 在 skill 目录下运行：
+装好 wind-skills 后，第一次问行情 / 财务问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 在 skill 目录下运行：
 
 ```bash
-# AI 端自动 cd 到 skill 根目录后跑
 node scripts/cli.mjs open-portal
 ```
-
-> 想手动跑：先 `cd` 到 skill 安装目录（Claude Code: `~/.claude/skills/<name>/`），再执行上面命令。所有 skill 内脚本路径都是相对 skill 根目录的 `scripts/cli.mjs`。
 
 跨平台自动调浏览器（macOS `open` / Linux `xdg-open` / Windows `start`），打开 `https://aimarket.wind.com.cn/#/user/overview`：
 
 - **已登录** → 直接看到个人中心，复制 API Key
 - **未登录** → SPA 自动跳到 `/#/login`，登录后回到 overview 即可
 
-> headless / 远程 SSH / 无 GUI 环境下 spawn 会失败，命令会输出 `fallback_message` 让你手动复制 URL。
-
-### 拿到 Key 后配置
+### 拿到 Key 后配置（推荐方式 3）
 
 ```bash
 mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/config
@@ -90,47 +99,45 @@ mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/confi
 
 1. 环境变量 `WIND_API_KEY`
 2. skill 目录内 `config.json`
-3. 全局 `~/.wind-aimarket/config`（**推荐**）
+3. 全局 `~/.wind-aimarket/config`（**推荐**，所有 wind skill 共享）
 
 ---
 
-## 🧭 选哪个 skill？（边界守则）
+## 🧭 wind-skills 的 server_type 选择守则
 
-| 你想问 | 用哪个 skill |
+| 你想问 | server_type |
 |---|---|
-| 茅台**最新价**、今天涨跌、成交量 | `wind-quote-skill` |
-| 茅台**K 线**走势（日 / 周 / 月） | `wind-quote-skill` |
-| 沪深 300 / 中证 1000 等**板块成分** | `wind-quote-skill` |
-| 茅台 2024 年**营收 / 净利润 / ROE** | `wind-financial-data-skill` |
-| 茅台**最新公告 / 年报 / 招股书** | `wind-financial-data-skill` |
-| 行业**研报 / 深度报告** | 当前暂未开放专门 skill |
-| 跨指数 / 跨标的**财务对比** | `wind-financial-data-skill` |
-| GDP / CPI / M2 等**宏观指标** | `wind-financial-data-skill` |
+| 茅台**最新价 / 涨跌 / K 线 / 分钟** | `quote` |
+| 任何**基金**（档案 / 持仓 / 业绩 / 经理） | `fund_data` |
+| 茅台**财报 / 营收 / 净利润 / ROE / 股本 / 技术指标 / 风险** | `stock_data` |
+| 茅台**最新公告 / 年报 / 招股书 / 财经新闻** | `financial_docs` |
+| **GDP / CPI / M2 / 行业经济**指标 | `economic_data` |
+| 不确定 / 跨域综合查询 | `analytics_data` |
 
-> 模糊场景（如"茅台走势"）：默认走 `wind-quote-skill`（K 线）；带"业绩 / 财务 / 估值"关键词时切到 `wind-financial-data-skill`。
+更详细的工具表见 [`skills/wind-skills/SKILL.md`](./skills/wind-skills/SKILL.md)。
 
 ---
 
-## 📂 目录结构
+## 📂 目录结构（v6.0 平铺）
 
 ```
 wind-skills/
-├── README.md                                ← 你现在看的这份
-├── skill.md                                 ← 面向 AI Agent 的站点级入口引导
-└── skills/
-    ├── wind-find-finance-skill/
-    │   ├── SKILL.md                         ← 金融入口 skill（llm-wiki router）
-    │   ├── scripts/cli.mjs                  ← route / list / find / read / refresh
-    │   ├── references/wiki/                 ← llm-wiki 本地基线
-    │   └── README.md
-    ├── wind-quote-skill/
-    │   ├── SKILL.md                         ← AI 加载的核心指令
-    │   ├── scripts/cli.mjs                  ← 主脚本（list-tools + call）
-    │   ├── README.md
-    │   ├── config.json.example
-    │   └── .gitignore
-    └── wind-financial-data-skill/
-        └── （同上结构）
+├── README.md                       ← 你现在看的这份
+├── skill.md                        ← 面向 AI Agent 的站点级入口引导
+└── skills/                         ← 所有 skill 直接平铺，对齐 npx skills 协议
+    ├── wind-find-finance-skill/    ← 入口（无 cli.mjs，纯 SKILL.md + references）
+    ├── wind-skills/                ← 数据合并版（仿 ifind，6 server / 19 工具）
+    ├── a-share-primary-theme-identification/
+    ├── backtest-expert/
+    ├── buffett/
+    ├── dcf-model/
+    ├── earnings-analysis/
+    ├── equity-investment-thesis/
+    ├── market-environment-analysis/
+    ├── position-sizer/
+    ├── post-market-debrief/
+    ├── theme-detector/
+    └── valuation-pricing-framework/
 ```
 
 ---
@@ -148,7 +155,9 @@ wind-skills/
 
 ## 🗺️ 路线图
 
-- [x] `wind-find-finance-skill` —— 入口型 skill，含**金融能力发现器**（不限 wind 自家，未来收录第三方如同花顺 / 彭博等）
+- [x] v6.0 架构反转：cli.mjs 砍掉，AI 守则驱动升级感知
+- [x] wind-skills v1.1.0：6 server / 19 工具合并桥接
+- [ ] 收录同花顺 ifind 两个 zip（数据发现增至 3 个）
 - [ ] 触发率回归测试集（50 条真实金融问句）
 - [ ] 将 `skill.md` 发布到 `https://aimarket.wind.com.cn/skill.md`
 

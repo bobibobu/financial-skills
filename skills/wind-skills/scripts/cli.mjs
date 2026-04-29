@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// wind-skills · v1.0.0
-// 合并版桥接 skill：万得行情 (quote) + 金融基本面 (financial-data) 两个 MCP server
-// 仿 ifind 模式：call(server_type, tool_name, params)，server_type 预留扩展点
+// wind-skills · v1.1.0
+// 合并版桥接 skill：万得 6 个 MCP server（quote / fund_data / financial_docs / stock_data / economic_data / analytics_data）
+// 仿 ifind 模式：call(server_type, tool_name, params)，server_type 可扩展
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -9,20 +9,39 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
-const SKILL_VERSION = '1.0.0';
+const SKILL_VERSION = '1.1.0';
 
 const SERVERS = {
   quote: {
     endpoint: 'https://mcp.wind.com.cn/vserver_wind_quote/mcp/',
     cache_id: 'wind-quote',
-    label: 'Wind 行情',
+    label: 'Wind 行情（A 股/港股快照、K 线、分钟）',
   },
-  'financial-data': {
-    endpoint: 'https://mcp.wind.com.cn/vserver_wind_financial_data/mcp/',
-    cache_id: 'wind-financial-data',
-    label: 'Wind 金融基本面 + RAG',
+  fund_data: {
+    endpoint: 'https://mcp.wind.com.cn/vserver_fund_data/mcp/',
+    cache_id: 'wind-fund-data',
+    label: 'Wind 基金（档案/持仓/业绩/持有人/财务/管理人）',
   },
-  // 未来扩展：esg / alternative / trading ... 加一行即可
+  financial_docs: {
+    endpoint: 'https://mcp.wind.com.cn/vserver_financial_docs/mcp/',
+    cache_id: 'wind-financial-docs',
+    label: 'Wind 金融文档 RAG（公告 / 新闻）',
+  },
+  stock_data: {
+    endpoint: 'https://mcp.wind.com.cn/vserver_stock_data/mcp/',
+    cache_id: 'wind-stock-data',
+    label: 'Wind 股票（档案/财务/股本/事件/技术指标/风险）',
+  },
+  economic_data: {
+    endpoint: 'https://mcp.wind.com.cn/vserver_economic_data/mcp/',
+    cache_id: 'wind-economic-data',
+    label: 'Wind EDB 宏观/行业经济指标',
+  },
+  analytics_data: {
+    endpoint: 'https://mcp.wind.com.cn/vserver_analytics_data/mcp/',
+    cache_id: 'wind-analytics-data',
+    label: 'Wind 通用分析数据（NL → Wind 数据）',
+  },
 };
 
 const PORTAL_URL = 'https://aimarket.wind.com.cn/#/user/overview';
@@ -196,7 +215,11 @@ async function cmdCall(server_type, toolName, paramsJson) {
       `可用 server_type: ${Object.keys(SERVERS).join(' / ')}\n` +
       `例：\n` +
       `  call quote quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH"}'\n` +
-      `  call financial-data search_financial_data '{"question":"贵州茅台 2024 年 ROE"}'`
+      `  call analytics_data get_financial_data '{"question":"贵州茅台 2024 年 ROE"}'\n` +
+      `  call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'\n` +
+      `  call fund_data get_fund_info '{"question":"005827.OF 基金档案"}'\n` +
+      `  call financial_docs get_financial_news '{"query":"美联储利率政策","top_k":3}'\n` +
+      `  call economic_data get_economic_data '{"metricIdsStr":"中国GDP"}'`
     );
   }
 
@@ -265,7 +288,8 @@ const USAGE =
   `典型:\n` +
   `  cli.mjs list-tools quote\n` +
   `  cli.mjs call quote quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE"}'\n` +
-  `  cli.mjs call financial-data search_financial_data '{"question":"贵州茅台 2024 年 ROE"}'`;
+  `  cli.mjs call analytics_data get_financial_data '{"question":"贵州茅台 2024 年 ROE"}'\n` +
+  `  cli.mjs call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'`;
 
 const commands = {
   'list-tools': () => cmdListTools(args[0]),
