@@ -6,14 +6,14 @@
 
 ---
 
-## 📦 收录的 Skill（v6.0.3 + wind-mcp-skill v1.2.0）
+## 📦 收录的 Skill（v6.0.4 + wind-mcp-skill v1.3.0）
 
 ### 数据发现类
 
 | Skill | 能力域 |
 |---|---|
 | [`wind-find-finance-skill`](./skills/wind-find-finance-skill) | **金融能力入口**：列举平台所有 skill 并按用户问题推荐，引导安装 / 升级 |
-| [`wind-mcp-skill`](./skills/wind-mcp-skill) | **Wind 5 server / 16 工具 MCP 数据桥接**：基金 / 股票深度 / 文档 RAG / 宏观 / 通用 NL 分析（不含实时行情） |
+| [`wind-mcp-skill`](./skills/wind-mcp-skill) | **Wind 5 server / 22 工具 MCP 数据桥接**：基金（含 ETF 行情）/ 股票（含行情）/ 文档 RAG / 宏观 / 通用 NL 分析 |
 
 ### 金融分析类（社区 winus 收录）
 
@@ -78,7 +78,7 @@ npx skills add JsonCodeChina/wind-skills --list
 
 ### 让 AI 帮你打开开发者中心拿 Key（推荐）
 
-装好 wind-mcp-skill 后，第一次问基金 / 财务 / 公告问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 在 skill 目录下运行：
+装好 wind-mcp-skill 后，第一次问行情 / 基金 / 财务 / 公告问题，AI 会发现没 Key 并**主动询问**："要我现在帮你打开万得开发者中心吗？" 同意后，AI 在 skill 目录下运行：
 
 ```bash
 node scripts/cli.mjs open-portal
@@ -107,13 +107,15 @@ mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/confi
 
 | 你想问 | server_type |
 |---|---|
-| 任何**基金**（档案 / 持仓 / 业绩 / 经理） | `fund_data` |
-| 茅台**财报 / 营收 / 净利润 / ROE / 股本 / 技术指标 / 风险** | `stock_data` |
+| 茅台**最新价 / K 线 / 分钟级行情** | `stock_data`（行情类工具） |
+| 茅台**财报 / 营收 / 净利润 / ROE / 股本 / 技术指标 / 风险** | `stock_data`（NL 类工具） |
+| ETF / 基金**最新价 / K 线** | `fund_data`（行情类工具） |
+| 任何**基金**（档案 / 持仓 / 业绩 / 经理） | `fund_data`（NL 类工具） |
 | 茅台**最新公告 / 年报 / 招股书 / 财经新闻** | `financial_docs` |
 | **GDP / CPI / M2 / 行业经济**指标 | `economic_data` |
 | 不确定 / 跨域综合查询 | `analytics_data` |
 
-> **不含实时行情 / K 线 / 分钟级行情**。
+> fund_data / stock_data 各包含两类工具：行情类（结构化代码参数）+ NL 类（自然语言）。
 
 更详细的工具表见 [`skills/wind-mcp-skill/SKILL.md`](./skills/wind-mcp-skill/SKILL.md)。
 
@@ -127,7 +129,7 @@ wind-skills/
 ├── skill.md                        ← 面向 AI Agent 的站点级入口引导
 └── skills/                         ← 所有 skill 直接平铺，对齐 npx skills 协议
     ├── wind-find-finance-skill/    ← 入口（无 cli.mjs，纯 SKILL.md + references）
-    ├── wind-mcp-skill/             ← 数据桥接（5 server / 16 工具）
+    ├── wind-mcp-skill/             ← 数据桥接（5 server / 22 工具，含行情）
     ├── a-share-primary-theme-identification/
     ├── backtest-expert/
     ├── buffett/
@@ -157,7 +159,7 @@ wind-skills/
 ## 🗺️ 路线图
 
 - [x] v6.0 架构反转：纯 SKILL.md + references 守则驱动，无 cli.mjs 路由层
-- [x] wind-mcp-skill v1.2.0：5 server / 16 工具 MCP 数据桥接（不含实时行情）
+- [x] wind-mcp-skill v1.3.0：5 server / 22 工具 MCP 数据桥接（行情按品种重组到 fund_data / stock_data）
 - [x] 顶层 `README-skills.md` 极简化双路径引导（替代旧 `skill.md`）
 - [ ] 触发率回归测试集（50 条真实金融问句）
 - [ ] 将 `README-skills.md` 发布到 `https://aimarket.wind.com.cn/`

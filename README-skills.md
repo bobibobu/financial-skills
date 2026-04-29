@@ -27,7 +27,7 @@ npx skills add JsonCodeChina/wind-skills --skill wind-find-finance-skill -g -y
 npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find-finance-skill -g -y
 ```
 
-装好后任意 AI 对话提金融问题(基金 / 估值 / 选股 / 复盘 / 回测 / 公告 / 宏观 ...),AI 会:
+装好后任意 AI 对话提金融问题(行情 / 基金 / 估值 / 选股 / 复盘 / 回测 / 公告 / 宏观 ...),AI 会:
 
 - 列出 1-3 个相关 skill 并给出安装命令让你挑装
 - 推荐先装 **wind-mcp-skill** 作数据来源
@@ -37,8 +37,7 @@ npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find
 ## 路径 B:直接装 Wind 万得数据 skill
 
 > 适合:已知要用 Wind 数据 / 重度查询用户。
-> 覆盖 5 大类 / 16 个工具:基金 · 股票深度 · 公告新闻 · 宏观 EDB · 通用 NL。
-> （**不含**实时行情 / K 线 / 分钟级行情。）
+> 覆盖 5 大类 / 22 个工具:基金(含 ETF 行情) · 股票(含行情) · 公告新闻 · 宏观 EDB · 通用 NL。
 
 ### Step 1 — 装 skill 包
 

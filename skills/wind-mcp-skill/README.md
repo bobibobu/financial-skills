@@ -1,10 +1,10 @@
 # wind-mcp-skill
 
-> Wind 万得 MCP 数据桥接 skill · v1.2.0 · 5 server / 16 工具
+> Wind 万得 MCP 数据桥接 skill · v1.3.0 · 5 server / 22 工具
 
-通过统一调用入口接入万得 5 个 MCP server，按 `server_type` 路由调用。覆盖 Wind 基金 / 股票深度 / 金融文档 / 宏观经济 / 通用 NL 分析。
+通过统一调用入口接入万得 5 个 MCP server，按 `server_type` 路由调用。覆盖 Wind 基金（含 ETF 行情）/ 股票（含行情）/ 金融文档 / 宏观经济 / 通用 NL 分析。
 
-> **不包含**：实时行情 / K 线 / 分钟级行情。
+> fund_data / stock_data 各包含两类工具：行情类（结构化代码参数）+ NL 类（自然语言）。
 
 ---
 
@@ -47,8 +47,8 @@ node scripts/cli.mjs open-portal
 
 | server_type | 工具数 | 说明 |
 |---|---|---|
-| `fund_data` | 6 | 基金档案 / 财务 / 持仓 / 业绩 / 持有人 / 公司 |
-| `stock_data` | 6 | 股票档案 / 财务基本面 / 股本 / 事件 / 技术指标 / 风险 |
+| `fund_data` | 9 | 基金 6 NL（档案/财务/持仓/业绩/持有人/公司）+ 3 行情（price/kline/quote） |
+| `stock_data` | 9 | 股票 6 NL（档案/财务/股本/事件/技术/风险）+ 3 行情（price/kline/quote） |
 | `financial_docs` | 2 | 公司公告、财经新闻（RAG 检索） |
 | `economic_data` | 1 | EDB 宏观 / 行业经济指标 |
 | `analytics_data` | 1 | 通用 NL → Wind 数据（fallback） |

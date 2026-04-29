@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// wind-mcp-skill · v1.2.0
-// 万得 MCP 数据桥接：5 个 MCP server（fund_data / financial_docs / stock_data / economic_data / analytics_data）
+// wind-mcp-skill · v1.3.0
+// 万得 MCP 数据桥接：5 个 MCP server / 22 工具（fund_data / financial_docs / stock_data / economic_data / analytics_data）
 // 统一调用入口 call(server_type, tool_name, params)，server_type 可扩展
+// 注：fund_data / stock_data 各包含行情类工具（price_indicators / kline / quote）+ NL 类工具（财务 / 档案等）
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -9,13 +10,13 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
-const SKILL_VERSION = '1.2.0';
+const SKILL_VERSION = '1.3.0';
 
 const SERVERS = {
   fund_data: {
     endpoint: 'https://mcp.wind.com.cn/vserver_fund_data/mcp/',
     cache_id: 'wind-fund-data',
-    label: 'Wind 基金（档案/持仓/业绩/持有人/财务/管理人）',
+    label: 'Wind 基金（档案/财务/持仓/业绩/持有人/公司 + 行情/K线/分钟）',
   },
   financial_docs: {
     endpoint: 'https://mcp.wind.com.cn/vserver_financial_docs/mcp/',
@@ -25,7 +26,7 @@ const SERVERS = {
   stock_data: {
     endpoint: 'https://mcp.wind.com.cn/vserver_stock_data/mcp/',
     cache_id: 'wind-stock-data',
-    label: 'Wind 股票（档案/财务/股本/事件/技术指标/风险）',
+    label: 'Wind 股票（档案/财务/股本/事件/技术/风险 + 行情/K线/分钟）',
   },
   economic_data: {
     endpoint: 'https://mcp.wind.com.cn/vserver_economic_data/mcp/',
@@ -272,7 +273,7 @@ const [cmd, ...args] = process.argv.slice(2);
 
 const USAGE =
   `wind-mcp-skill v${SKILL_VERSION}\n` +
-  `万得 MCP 数据桥接: 5 server / 16 工具（按 server_type 路由）\n\n` +
+  `万得 MCP 数据桥接: 5 server / 22 工具（按 server_type 路由）\n\n` +
   `用法:\n` +
   `  cli.mjs list-tools <server_type>\n` +
   `  cli.mjs call <server_type> <tool_name> '<params_json>'\n` +
@@ -281,9 +282,10 @@ const USAGE =
   Object.entries(SERVERS).map(([k, v]) => `  ${k.padEnd(20)}${v.label}`).join('\n') + '\n\n' +
   `典型:\n` +
   `  cli.mjs list-tools fund_data\n` +
-  `  cli.mjs call analytics_data get_financial_data '{"question":"贵州茅台 2024 年 ROE"}'\n` +
-  `  cli.mjs call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'\n` +
-  `  cli.mjs call fund_data get_fund_holdings '{"question":"005827.OF 最新一期重仓股"}'`;
+  `  cli.mjs call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'   # NL 类\n` +
+  `  cli.mjs call stock_data get_stock_price_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE"}'   # 行情类(结构化)\n` +
+  `  cli.mjs call fund_data get_fund_kline '{"windcode":"588200.SH","period":"10","count":30}'   # 基金 K 线\n` +
+  `  cli.mjs call analytics_data get_financial_data '{"question":"贵州茅台 2024 年 ROE"}'`;
 
 const commands = {
   'list-tools': () => cmdListTools(args[0]),
