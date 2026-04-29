@@ -12,11 +12,11 @@ description: AIMarket 平台 skill 清单本地副本。由 npx skills update -g
 
 ## 数据类(取数 / 查询)
 
-> 取数 / 查询:行情、财务、新闻、宏观指标、公司数据。
+> 取数 / 查询:基金、股票财务、公告、新闻、宏观指标。
 
 | 名称 | category | 装好需配置 | 一句话 |
 |---|---|---|---|
-| wind-mcp-skill | 数据-行情/财务/宏观/文档 | API Key | 万得 6 server / 19 工具:行情 + 基金 + 股票 + 公告新闻 + 宏观 EDB + 通用 NL(A 股 / 港股 / 中国宏观) |
+| wind-mcp-skill | 数据-基金/股票/宏观/文档 | API Key | 万得 5 server / 16 工具:基金 + 股票深度 + 公告新闻 + 宏观 EDB + 通用 NL(A 股 / 港股 / 中国宏观，不含实时行情) |
 
 ---
 
@@ -44,7 +44,7 @@ description: AIMarket 平台 skill 清单本地副本。由 npx skills update -g
 
 | category | 含 skill 数 | 代表 skill |
 |---|---|---|
-| 数据-行情/财务/宏观/文档 | 1 | wind-mcp-skill |
+| 数据-基金/股票/宏观/文档 | 1 | wind-mcp-skill |
 | 估值 | 3 | dcf-model |
 | 个股研究 | 2 | buffett |
 | 市场主线 | 3 | a-share-primary-theme-identification |

@@ -1,8 +1,8 @@
 ---
 name: wind-mcp-skill
 description: >-
-  Wind 万得 MCP 数据桥接 skill（v1.1.0，6 server / 19 工具）。按 `server_type` 路由：(1) `quote` 行情类（A 股 / 港股快照、K 线日 / 周 / 月、分钟）；(2) `fund_data` 基金类（档案 / 财务 / 持仓 / 业绩 / 持有人 / 公司）；(3) `stock_data` 股票深度（档案 / 财务基本面 / 股本 / 事件 / 技术指标 / 风险）；(4) `financial_docs` 文档 RAG（公告 / 财经新闻）；(5) `economic_data` EDB 宏观 + 行业经济指标；(6) `analytics_data` 通用 NL → Wind 数据。需要 WIND_API_KEY（登录 aimarket.wind.com.cn 开发者中心获取）。触发场景：A 股 / 港股代码 / K 线 / 分钟、基金任何维度、股票财报 / 估值、上市公司公告 / 财经新闻、宏观经济数据、跨标的对比。**不包含**：美股 / 欧股 / 日股、汇率 / 期货盘口、加密货币、非金融数据。
-version: 1.1.0
+  Wind 万得 MCP 数据桥接 skill（v1.2.0，5 server / 16 工具）。按 `server_type` 路由：(1) `fund_data` 基金类（档案 / 财务 / 持仓 / 业绩 / 持有人 / 公司）；(2) `stock_data` 股票深度（档案 / 财务基本面 / 股本 / 事件 / 技术指标 / 风险）；(3) `financial_docs` 文档 RAG（公告 / 财经新闻）；(4) `economic_data` EDB 宏观 + 行业经济指标；(5) `analytics_data` 通用 NL → Wind 数据。需要 WIND_API_KEY（登录 aimarket.wind.com.cn 开发者中心获取）。触发场景：基金任何维度、股票财报 / 估值、上市公司公告 / 财经新闻、宏观经济数据、跨标的对比。**不包含**：实时行情 / K 线 / 分钟级行情、美股 / 欧股 / 日股、汇率 / 期货盘口、加密货币、非金融数据。
+version: 1.2.0
 author: Wind AIMarket
 homepage: https://aimarket.wind.com.cn
 auto_invoke: true
@@ -11,20 +11,20 @@ security:
   eval: false
   filesystem_read: true     # 读 ~/.wind-aimarket/config 与 skill 内 config.json
   filesystem_write: true    # tools/list 24h 缓存到 ~/.cache/wind-aimarket/tools/
-  network: true             # 调用 mcp.wind.com.cn 6 个 endpoint
+  network: true             # 调用 mcp.wind.com.cn 5 个 endpoint
 examples:
-  - "贵州茅台今天涨了多少"
   - "易方达蓝筹精选 005827.OF 的最新规模和经理"
   - "宁德时代 2024 年 ROE 和净利润增速"
   - "贵州茅台 2024 年年度报告内容"
   - "美联储 2026 年利率政策最新新闻"
   - "中国近 10 年新能源汽车产销量"
   - "沪深 300 最近一周表现"
+  - "贵州茅台前十大股东"
 ---
 
-# Wind 万得 MCP 数据桥接（v1.1.0）
+# Wind 万得 MCP 数据桥接（v1.2.0）
 
-本 skill 合并万得 6 个 MCP server，按 `server_type` 路由调用，共 19 个工具。
+本 skill 通过统一调用入口接入万得 5 个 MCP server，按 `server_type` 路由调用，共 16 个工具。
 
 > ⚠️ **关键约束 · 运行环境**：所有 `node scripts/cli.mjs ...` 命令**必须在本 skill 根目录下运行**（cwd = skill 安装路径）。脚本依赖相对路径加载 `config.json`、写 `~/.cache/wind-aimarket/tools/` 缓存。常见安装路径：`~/.claude/skills/wind-mcp-skill/`、`~/.agents/skills/wind-mcp-skill/`、`~/.openclaw/workspace/skills/wind-mcp-skill/`。**调用前必须先 `cd` 进 skill 根。**
 
@@ -34,7 +34,6 @@ examples:
 
 | 场景 | server_type |
 |---|---|
-| A 股 / 港股最新行情、K 线、分钟 | `quote` |
 | 基金任何维度（档案 / 财务 / 持仓 / 业绩 / 持有人 / 管理公司） | `fund_data` |
 | 股票档案 / 财务基本面 / 股本结构 / 公司事件 / 技术指标 / 风险 | `stock_data` |
 | 上市公司公告、财经新闻 | `financial_docs` |
@@ -42,6 +41,7 @@ examples:
 | 不确定归属或跨域综合查询（fallback） | `analytics_data` |
 
 **❌ 不触发场景：**
+- **实时行情 / K 线 / 分钟级行情**（本 skill 不收录行情类）
 - 美股 / 欧股 / 非中概股
 - 汇率 / 期货盘口 / 加密货币
 - 非金融数据
@@ -72,15 +72,7 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
 2. 同意后跑：`node scripts/cli.mjs open-portal`
 3. 用户登录 / 拿 Key 后，按 cli.mjs 提示三选一配置（推荐 C：全局 `~/.wind-aimarket/config`，所有 wind skill 共享）
 
-## 工具表（6 server / 19 工具）
-
-### server_type=quote（3 个，结构化代码参数）
-
-| 工具 | 说明 | 必填入参 |
-|---|---|---|
-| `quote_get_indicators` | 实时行情快照（最新价 / 涨跌 / 成交） | `windcode, indexes` |
-| `quote_get_kline` | K 线（日 / 周 / 月，前复权 / 后复权 / 不复权） | `windcode` |
-| `quote_get_minute` | 分钟级行情 | `windcode` |
+## 工具表（5 server / 16 工具）
 
 ### server_type=fund_data（6 个，自然语言入参）
 
@@ -101,7 +93,7 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
 
 | 工具 | 说明 |
 |---|---|
-| `get_stock_basicinfo` | 股票基本档案（公司信息 / 主营 / 行业分类 / IPO 上市板） |
+| `get_stock_basicinfo` | 股票基本档案(公司信息 / 主营 / 行业分类 / IPO 上市板) |
 | `get_stock_fundamentals` | 财务基本面（盈利能力 / 资产负债 / 利润 / 现金流 / 增长率 / 杠杆） |
 | `get_stock_equity_holders` | 股本 + 股东（总股本 / 流通 / 前十大 / 实控人 / 限售解禁） |
 | `get_stock_events` | 事件 + 资本运作（IPO / 增发 / 配股 / 并购 / ST / 合规） |
@@ -141,8 +133,8 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
    - ✅ `"易方达蓝筹精选 005827.OF 基金档案"`
    - ❌ `"帮我查一下易方达基金的资料看看"`
 4. **economic_data 复杂参数降级**：含具体年份 / freq / beginDate 偶发后端 bug；遇 `'str' object has no attribute 'get'` 错时，**降级为简单 NL 问句重试**。
-5. **quote 是结构化代码参数**：不要传 `{question:"..."}` 给 quote server。它要 `windcode` + `indexes` / `period` 等结构化字段（参考工具表"必填入参"列）。
-6. **server_type 选错的代价**：选错会导致工具不存在或参数不匹配。优先按"何时使用"段的场景表选 server，再选具体工具。
+5. **server_type 选错的代价**：选错会导致工具不存在或参数不匹配。优先按"何时使用"段的场景表选 server，再选具体工具。
+6. **跨域查询用 analytics_data**：用户问题落不进前 4 个 server 的明确归属时，用 `analytics_data.get_financial_data` 自然语言兜底，比硬塞到 fund_data / stock_data 更准。
 
 ## 数据来源标注（必做）
 
@@ -157,13 +149,10 @@ node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
 ## 典型示例
 
 ```bash
-# 行情类
-node scripts/cli.mjs call quote quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE,VOLUME"}'
-node scripts/cli.mjs call quote quote_get_kline '{"windcode":"600519.SH","period":"D","count":30}'
-
 # 股票深度
 node scripts/cli.mjs call stock_data get_stock_fundamentals '{"question":"贵州茅台 2024 年 ROE 和净利润增速"}'
 node scripts/cli.mjs call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'
+node scripts/cli.mjs call stock_data get_stock_equity_holders '{"question":"贵州茅台前十大股东"}'
 
 # 基金
 node scripts/cli.mjs call fund_data get_fund_info '{"question":"易方达蓝筹精选 005827.OF 基金档案"}'
@@ -190,13 +179,14 @@ node scripts/cli.mjs call analytics_data get_financial_data '{"question":"中证
 | `economic_data` 后端 `'str' object has no attribute 'get'` | 降级为简单 NL 问句（如 `"中国GDP"`），不传 freq / beginDate / 含具体年份 |
 | 工具名报"未知 server_type" 或 "工具不存在" | 先 `list-tools <server_type>` 拿真 schema，按工具表选名 |
 | 调用失败但 cwd 不对 | 检查 `pwd` 是否为 skill 根目录；必须 `cd` 进 skill 安装路径再跑 |
+| 用户问实时行情 / K 线 | 本 skill 不含此能力；如确需估算可尝试 `analytics_data.get_financial_data` 兜底（成功率有限），否则告知用户需独立的行情 skill |
 
 ## 自检（响应前）
 
 - 🚨 **运行 cwd 是 skill 根目录吗？** → 否则一切失败。先 `cd` 进 skill 安装路径。
-- 用户问题是 A 股 / 港股 / 中国宏观 / 中概？是 → 用本 skill；否 → 不要套
+- 用户问题是 A 股 / 港股 / 中国宏观 / 中概的**财报 / 公告 / 基金 / 宏观**？是 → 用本 skill；否 → 不要套
+- 用户问题是**实时行情 / K 线**？本 skill 不含此能力，明确告知用户。
 - **选对 server_type**（最常出错处）：
-  - 行情 / K 线 / 分钟 → `quote`
   - 基金任何维度 → `fund_data`
   - 股票档案 / 财务 / 股本 / 事件 / 技术 / 风险 → `stock_data`
   - 公告 / 新闻 → `financial_docs`

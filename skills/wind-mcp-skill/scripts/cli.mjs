@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// wind-mcp-skill · v1.1.0
-// 万得 MCP 数据桥接：6 个 MCP server（quote / fund_data / financial_docs / stock_data / economic_data / analytics_data）
-// 仿 ifind 模式：call(server_type, tool_name, params)，server_type 可扩展
+// wind-mcp-skill · v1.2.0
+// 万得 MCP 数据桥接：5 个 MCP server（fund_data / financial_docs / stock_data / economic_data / analytics_data）
+// 统一调用入口 call(server_type, tool_name, params)，server_type 可扩展
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -9,14 +9,9 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
-const SKILL_VERSION = '1.1.0';
+const SKILL_VERSION = '1.2.0';
 
 const SERVERS = {
-  quote: {
-    endpoint: 'https://mcp.wind.com.cn/vserver_wind_quote/mcp/',
-    cache_id: 'wind-quote',
-    label: 'Wind 行情（A 股/港股快照、K 线、分钟）',
-  },
   fund_data: {
     endpoint: 'https://mcp.wind.com.cn/vserver_fund_data/mcp/',
     cache_id: 'wind-fund-data',
@@ -214,7 +209,6 @@ async function cmdCall(server_type, toolName, paramsJson) {
       `❌ 用法：call <server_type> <tool_name> '<params_json>'\n` +
       `可用 server_type: ${Object.keys(SERVERS).join(' / ')}\n` +
       `例：\n` +
-      `  call quote quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH"}'\n` +
       `  call analytics_data get_financial_data '{"question":"贵州茅台 2024 年 ROE"}'\n` +
       `  call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'\n` +
       `  call fund_data get_fund_info '{"question":"005827.OF 基金档案"}'\n` +
@@ -278,7 +272,7 @@ const [cmd, ...args] = process.argv.slice(2);
 
 const USAGE =
   `wind-mcp-skill v${SKILL_VERSION}\n` +
-  `万得 MCP 数据桥接: 6 server / 19 工具（按 server_type 路由）\n\n` +
+  `万得 MCP 数据桥接: 5 server / 16 工具（按 server_type 路由）\n\n` +
   `用法:\n` +
   `  cli.mjs list-tools <server_type>\n` +
   `  cli.mjs call <server_type> <tool_name> '<params_json>'\n` +
@@ -286,10 +280,10 @@ const USAGE =
   `可用 server_type:\n` +
   Object.entries(SERVERS).map(([k, v]) => `  ${k.padEnd(20)}${v.label}`).join('\n') + '\n\n' +
   `典型:\n` +
-  `  cli.mjs list-tools quote\n` +
-  `  cli.mjs call quote quote_get_indicators '{"windcode":"600519.SH","indexes":"NAME,MATCH,CHANGERANGE"}'\n` +
+  `  cli.mjs list-tools fund_data\n` +
   `  cli.mjs call analytics_data get_financial_data '{"question":"贵州茅台 2024 年 ROE"}'\n` +
-  `  cli.mjs call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'`;
+  `  cli.mjs call stock_data get_stock_basicinfo '{"question":"600519.SH 公司基本档案"}'\n` +
+  `  cli.mjs call fund_data get_fund_holdings '{"question":"005827.OF 最新一期重仓股"}'`;
 
 const commands = {
   'list-tools': () => cmdListTools(args[0]),
