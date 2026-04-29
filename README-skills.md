@@ -1,73 +1,81 @@
 ---
-name: wind-aimarket
-description: 万得金融能力市场。一站找全 wind / 同花顺 / 社区的金融数据查询与金融分析 skill。
+name: aimarket
+description: 全网金融能力一站式入口。装一次,AI 自动按问题推荐合适的能力。优先内置 Wind 万得数据。
 ---
 
-# Wind AIMarket
+# AIMarket — AI 金融能力市场
 
-> AI 金融能力市场。装一个入口 skill，列举平台所有金融能力，按需安装。
+> 全网金融能力一站式入口。
+> 装一次,AI 自动按问题推荐合适的能力。
+> 优先内置 **Wind 万得**数据。
 
-## 安装入口
+---
 
-国外（GitHub）：
+## 路径 A:装能力发现器(让 AI 帮你挑全网能力)
+
+> 适合:不知道用哪个工具 / 想看平台都有什么能力。
+
+国外(GitHub):
 
 ```bash
 npx skills add JsonCodeChina/wind-skills --skill wind-find-finance-skill -g -y
 ```
 
-国内（Gitee 镜像）：
+国内(Gitee 镜像):
 
 ```bash
 npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-find-finance-skill -g -y
 ```
 
----
+装好后任意 AI 对话提金融问题(行情 / 估值 / 选股 / 复盘 / 回测 ...),AI 会:
 
-## Skill 索引
-
-按用户问题自然路由：取"数据"用数据发现类；做"分析"用金融分析类。
-
-### 数据发现
-
-> 取数 / 查询：行情、财务、新闻、研报、宏观指标、公司数据。
-
-| 名称 | 平台版本 | 一句话 |
-|---|---|---|
-| wind-mcp-skill | 1.1.0 | 万得 6 server / 19 工具：行情 + 基金 + 股票 + 文档 RAG + 宏观 + 通用分析（A 股 / 港股 / 中国宏观） |
-
-### 金融分析
-
-> 决策 / 工作流：估值、复盘、选股、回测、个股研究、市场主线。
-
-| 名称 | 平台版本 | 一句话 |
-|---|---|---|
-| a-share-primary-theme-identification | 1.0.0 | A 股市场主线识别（题材周期 / 资金行为） |
-| backtest-expert | 1.0.0 | 量化策略系统化回测（压力测试） |
-| buffett | 1.0.0 | 巴菲特投资思维体系（护城河 / 安全边际） |
-| dcf-model | 1.0.0 | DCF 估值建模（WACC + 敏感性分析） |
-| earnings-analysis | 1.0.0 | 季报点评（beat/miss + 估值更新） |
-| equity-investment-thesis | 1.0.0 | 个股投资逻辑深度研究（券商研究员风格） |
-| market-environment-analysis | 1.0.0 | 全球市场环境分析（risk-on / risk-off） |
-| position-sizer | 1.0.0 | 仓位管理（风险 / Kelly / ATR） |
-| post-market-debrief | 1.0.0 | 盘后复盘（市场全景 / 主线轮动） |
-| theme-detector | 1.0.0 | 跨板块主题检测（FINVIZ + 生命周期） |
-| valuation-pricing-framework | 1.0.0 | 估值与定价框架（重估空间判断） |
+- 列出 1-3 个相关 skill 并给出安装命令让你挑装
+- 推荐先装 **wind-mcp-skill** 作数据来源
 
 ---
 
-## 安装其他 skill（公式）
+## 路径 B:直接装 Wind 万得数据 skill
 
-把"安装入口"命令里的 `wind-find-finance-skill` 换成索引表的 `名称` 即可：
+> 适合:已知要用 Wind 数据 / 重度查询用户。
+> 覆盖 6 大类 / 19 个工具:行情 · 基金 · 股票深度 · 公告新闻 · 宏观 EDB · 通用 NL。
+
+### Step 1 — 装 skill 包
+
+国外(GitHub):
 
 ```bash
-# GitHub
-npx skills add JsonCodeChina/wind-skills --skill <skill-name> -g -y
-# Gitee
-npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill <skill-name> -g -y
+npx skills add JsonCodeChina/wind-skills --skill wind-mcp-skill -g -y
 ```
+
+国内(Gitee 镜像):
+
+```bash
+npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-mcp-skill -g -y
+```
+
+### Step 2 — 让 AI 帮你拿 API Key
+
+装好后向 AI 提一个金融数据问题(例:"贵州茅台最新股价"),AI 会自动:
+
+1. 调 wind-mcp-skill 触发"未配置 Key"引导
+2. 询问你是否同意打开浏览器
+3. 同意后自动弹 `aimarket.wind.com.cn` 开发者中心(未登录跳登录页)
+4. 你拿到 Key 后,AI 会按提示给你完整配置命令(推荐全局 `~/.wind-aimarket/config`,所有 wind skill 共享)
+
+> 你也可以提前手动配置:
+> ```bash
+> mkdir -p ~/.wind-aimarket && \
+>   echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/config
+> ```
+
+---
 
 ## 升级所有已装 skill
 
 ```bash
 npx skills update -g -y
 ```
+
+---
+
+© AIMarket 2026 · 反馈与贡献:[github.com/JsonCodeChina/wind-skills](https://github.com/JsonCodeChina/wind-skills)
