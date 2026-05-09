@@ -64,3 +64,58 @@ installs = next((s["installs"] for s in data["skills"] if s["skillId"] == name),
 搜索为模糊匹配，通用名称可能返回多条结果，需通过 id（格式 owner/repo/skill-name）或 skillId 精准定位
 安装次数在用户执行 npx skills add 时自动上报，非实时统计，有短暂延迟
 该接口由 skills.sh（Vercel Labs）提供，属于公开搜索能力，暂无常驻 SLA 保证
+
+
+
+#!/bin/bash
+# get_installs.sh
+
+# GitHub 来源的 skill 安装次数（通过 skills.sh 搜索 API）
+SKILLS=(
+  "wind-find-finance-skill"
+  "wind-mcp-skill"
+  "a-share-primary-theme-identification"
+)
+
+OWNER="wind-information-co-ltd"
+REPO="wind-skills"
+
+echo "=== Skills.sh 安装统计 (GitHub: ${OWNER}/${REPO}) ==="
+for SKILL in "${SKILLS[@]}"; do
+  COUNT=$(python -c "
+import urllib.request, json
+url = 'https://skills.sh/api/search?q=${SKILL}&limit=50'
+resp = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'}), timeout=10)
+data = json.loads(resp.read())
+target = '${OWNER}/${REPO}/${SKILL}'.lower()
+print(next((s['installs'] for s in data['skills'] if s['id'].lower() == target), 0))
+")
+  echo "  ${SKILL}: ${COUNT} installs"
+done
+
+echo ""
+echo "=== Gitee 仓库基本统计 (wind_info/wind-skills) ==="
+python -c "
+import urllib.request, json
+url = 'https://gitee.com/api/v5/repos/wind_info/wind-skills'
+resp = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'}), timeout=10)
+data = json.loads(resp.read())
+print(f\"  forks: {data['forks_count']}\")
+print(f\"  stars: {data['stargazers_count']}\")
+print(f\"  watchers: {data['watchers_count']}\")
+print(f\"  clone次数: Gitee API 不提供此字段\")
+"
+
+echo ""
+echo "=== GitHub 仓库基本统计 ==="
+python -c "
+import urllib.request, json
+url = 'https://api.github.com/repos/Wind-Information-Co-Ltd/wind-skills'
+resp = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'}), timeout=10)
+data = json.loads(resp.read())
+print(f\"  forks: {data['forks_count']}\")
+print(f\"  stars: {data['stargazers_count']}\")
+print(f\"  watchers: {data['watchers_count']}\")
+print(f\"  clone次数: 需要 push 权限 token，且仅保留 14 天\")
+"
+
