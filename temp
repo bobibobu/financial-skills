@@ -119,3 +119,204 @@ print(f\"  watchers: {data['watchers_count']}\")
 print(f\"  clone次数: 需要 push 权限 token，且仅保留 14 天\")
 "
 
+API 需要登录认证。响应体里 access_today.pull 就是当天的 clone 量。
+
+要在脚本或服务里调用，你需要一个 Gitee 个人访问令牌：
+
+登录 Gitee → 设置 → 私人令牌（https://gitee.com/profile/personal_access_tokens）
+生成一个 token，勾选 projects 权限
+然后：
+
+脚本写法
+
+#!/bin/bash
+# Gitee 仓库 clone 统计
+
+GITEE_TOKEN="你的私人令牌"
+ENTERPRISE_ID="16365394"
+PROJECT_PATH="wind_info%2Fwind-skills"
+REF="main"
+
+RESP=$(curl -s -X GET \
+  "https://api.gitee.com/enterprises/${ENTERPRISE_ID}/projects/${PROJECT_PATH}/statistics/${REF}?qt=path" \
+  -H "Content-Length: 0" \
+  -H "Authorization: Bearer ${GITEE_TOKEN}")
+
+echo "今日 clone (pull): $(echo "$RESP" | python -c "import sys,json; print(json.loads(sys.stdin.read())['access_today']['pull'])")"
+echo "今日 push: $(echo "$RESP" | python -c "import sys,json; print(json.loads(sys.stdin.read())['access_today']['push'])")"
+echo "今日 zip 下载: $(echo "$RESP" | python -c "import sys,json; print(json.loads(sys.stdin.read())['access_today']['download_zip'])")"
+Java 写法
+
+public class GiteeStatsClient {
+
+    private static final String STATS_API =
+        "https://api.gitee.com/enterprises/%s/projects/%s/statistics/%s?qt=path";
+
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * @param token         Gitee 私人令牌
+     * @param enterpriseId  企业 ID（你的: 16365394）
+     * @param projectPath   仓库路径（URL 编码，如 wind_info%2Fwind-skills）
+     * @param ref           分支名（如 main）
+     */
+    public AccessToday getAccessToday(String token, String enterpriseId,
+                                       String projectPath, String ref) {
+        try {
+            String url = String.format(STATS_API, enterpriseId, projectPath, ref);
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", "Bearer " + token)
+                    .header("Content-Length", "0")
+                    .header("Accept", "application/json")
+                    .timeout(Duration.ofSeconds(10))
+                    .GET().build();
+
+            HttpResponse<String> resp = httpClient.send(req,
+                    HttpResponse.BodyHandlers.ofString());
+
+            JsonNode root = mapper.readTree(resp.body());
+            JsonNode access = root.get("access_today");
+
+            return new AccessToday(
+                access.get("pull").asInt(),
+                access.get("push").asInt(),
+                access.get("download_zip").asInt(),
+                access.get("ip").asInt()
+            );
+        } catch (Exception e) {
+            return new AccessToday(0, 0, 0, 0);
+        }
+    }
+
+    public record AccessToday(int pull, int push, int downloadZip, int ip) {}
+}
+注意：这个接口返回的是 access_today，即当天的 clone 量。如果需要累计总量，你需要在你的 Java 服务端做定时采集（比如每天存一次），自己累加
+
+
+
+来源	skills.sh 上的 source	统计
+GitHub (Wind-Information-Co-Ltd/wind-skills)	wind-information-co-ltd/wind-skills	有，已分开统计
+Gitee (wind_info/wind-skills)	未出现在 skills.sh	无独立统计
+Gitee 的安装记录不会单独出现在 skills.sh 上——npx skills add 通过 Gitee URL 安装时，telemetry 上报的 source 不被 skills.sh 的搜索索引收录。所以你只能获取到 GitHub 来源的安装次数。
+
+Java 后端写法
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
+
+public class SkillsInstallsClient {
+
+    private static final String SEARCH_API = "https://skills.sh/api/search?q=%s&limit=50";
+    private final HttpClient httpClient;
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    public SkillsInstallsClient() {
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+    }
+
+    /**
+     * @param owner     e.g. "wind-information-co-ltd"
+     * @param repo      e.g. "wind-skills"
+     * @param skillName e.g. "wind-find-finance-skill"
+     */
+    public int getInstalls(String owner, String repo, String skillName) {
+        try {
+            String url = String.format(SEARCH_API,
+                    java.net.URLEncoder.encode(skillName, "UTF-8"));
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "Mozilla/5.0")
+                    .timeout(Duration.ofSeconds(10))
+                    .GET().build();
+
+            HttpResponse<String> resp = httpClient.send(req,
+                    HttpResponse.BodyHandlers.ofString());
+
+            SearchResponse data = mapper.readValue(resp.body(),
+                    SearchResponse.class);
+
+            String targetId = (owner + "/" + repo + "/" + skillName).toLowerCase();
+            return data.skills.stream()
+                    .filter(s -> s.id.equalsIgnoreCase(targetId))
+                    .map(s -> s.installs)
+                    .findFirst().orElse(0);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    // --- DTO ---
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class SearchResponse {
+        public List<SkillEntry> skills;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class SkillEntry {
+        public String id;
+        public String skillId;
+        public String name;
+        public int installs;
+        public String source;
+    }
+}
+调用：
+
+
+var client = new SkillsInstallsClient();
+
+// GitHub 来源
+int gh = client.getInstalls(
+    "wind-information-co-ltd", "wind-skills", "wind-find-finance-skill");
+// → 12
+
+int gh2 = client.getInstalls(
+    "wind-information-co-ltd", "wind-skills", "wind-mcp-skill");
+// → 22
+
+// Gitee 来源 — 无法获取，返回 0
+int gitee = client.getInstalls(
+    "wind_info", "wind-skills", "wind-find-finance-skill");
+// → 0（skills.sh 未收录）
+简单脚本写法
+
+#!/bin/bash
+# get_installs.sh
+
+OWNER="wind-information-co-ltd"
+REPO="wind-skills"
+SKILLS=("wind-find-finance-skill" "wind-mcp-skill" "a-share-primary-theme-identification")
+
+for SKILL in "${SKILLS[@]}"; do
+    COUNT=$(curl -s "https://skills.sh/api/search?q=${SKILL}&limit=50" \
+        | python -c "
+import sys, json
+data = json.loads(sys.stdin.read())
+target = '${OWNER}/${REPO}/${SKILL}'.lower()
+print(next((s['installs'] for s in data['skills'] if s['id'].lower() == target), 0))
+")
+    echo "${SKILL}: ${COUNT} installs"
+done
+输出：
+
+
+wind-find-finance-skill: 12 installs
+wind-mcp-skill: 22 installs
+a-share-primary-theme-identification: 0 installs
+
+
