@@ -1,71 +1,71 @@
 # wind-mcp-skill
 
-> 访问万得 Wind 金融数据
+> **访问万得 Wind 金融数据** · A 股 / 港股 / 美股 / 基金 / 指数 / 债券 / 公告 / 新闻 / 宏观经济
 
-覆盖 A 股 / 港股股票（行情与财务）、ETF 与公募基金（行情与全维数据）、上市公司公告与新闻、宏观经济与行业指标。
+---
+
+## 这是什么
+
+通过 MCP 协议访问万得 Wind 金融数据库，给 AI Agent 提供：
+
+- A 股股票行情（最新价 / K 线 / 分钟）+ 财务基本面（财报 / 股本 / 事件 / 技术指标 / 风险）
+- 港股 / 美股股票行情 + 基本面（档案 / 财务 / 股本 / 事件 / 技术指标 / 风险）
+- ETF / 公募基金行情 + 全维数据（档案 / 财务 / 持仓 / 业绩 / 持有人 / 管理公司）
+- 指数 / 板块行情 + 档案 / 基本面（成份股加权 PE / PB / PS）/ 技术指标
+- 债券基本档案 / 发债主体 / 行情估值（久期 / 凸性 / 利差）/ 主体财务
+- 上市公司公告 + 财经新闻 RAG
+- 宏观经济 / 行业经济指标（EDB）
+- 自然语言通用查询入口（覆盖整个 Wind 数据库）
+
+**不包含**：欧股 / 日股、汇率 / 期货盘口、加密货币、非金融数据。
 
 ---
 
 ## 安装
 
 ```bash
+# 全局（推荐 — 跨项目 + 跨 AI agent 共享）
+
 # GitHub
-npx skills add JsonCodeChina/wind-skills --skill wind-mcp-skill -g -y
+npx skills add Wind-Information-Co-Ltd/wind-skills --skill wind-mcp-skill -g -y
 
 # Gitee 镜像（国内）
-npx skills add https://gitee.com/jsonCodeChina/wind-skills.git --skill wind-mcp-skill -g -y
+npx skills add https://gitee.com/wind_info/wind-skills.git --skill wind-mcp-skill -g -y
 ```
 
-需要 `WIND_API_KEY`（登录 https://aimarket.wind.com.cn 开发者中心获取）。
+> 想限制在当前项目内用，把命令的 `-g` 去掉即可。`-g` 会自动 symlink 到机器上所有已识别的 AI agent（Claude Code / Cursor / OpenClaw / Hermes 等）。
 
 ---
 
-## 命令
+## API Key
 
-```bash
-# 看可用工具（任选一个 server_type）
-node scripts/cli.mjs list-tools fund_data
-node scripts/cli.mjs list-tools financial_docs
-node scripts/cli.mjs list-tools stock_data
-node scripts/cli.mjs list-tools economic_data
-node scripts/cli.mjs list-tools analytics_data
+需要 `WIND_API_KEY`（登录 [aimarket.wind.com.cn 开发者中心](https://aimarket.wind.com.cn/#/user/overview) 获取）。
 
-# 调用工具
-node scripts/cli.mjs call <server_type> <tool_name> '<params_json>'
-
-# 没 Key 时打开开发者中心（先问用户再跑）
-node scripts/cli.mjs open-portal
-```
-
-> ⚠️ 所有命令必须在 skill 根目录下运行（`cd` 进 skill 安装路径后再执行）。
-
----
-
-## 覆盖范围
-
-| 数据域 | 内容 |
-|---|---|
-| **股票** | A 股 / 港股 — 实时行情、K 线、分钟级、财务基本面、股本、公司事件、技术指标、风险 |
-| **基金** | ETF / LOF / 公募 — 行情、K 线、分钟级、档案、财务、持仓、业绩、持有人、管理公司 |
-| **公司公告** | 业绩公告、监管文件、招股书、致股东信、年报（按问题语义检索） |
-| **财经新闻** | 实时财经新闻（按问题语义检索） |
-| **宏观经济** | EDB 宏观与行业经济指标（GDP / CPI / M2 / 行业产销量 等） |
-| **通用兜底** | 自然语言 → Wind 数据（覆盖前述类别之外的杂项查询） |
-
----
-
-## API Key 三级兜底
-
-1. `export WIND_API_KEY=ak_xxx`
-2. `echo '{"wind_api_key":"ak_xxx"}' > config.json`（skill 目录下）
-3. `mkdir -p ~/.wind-aimarket && echo "WIND_API_KEY=ak_xxx" > ~/.wind-aimarket/config`（全局，所有 wind skill 共享）
-
-推荐方式 3。
+装好后向 AI 提一个 wind 数据问题，AI 会按 stderr 引导完成 Key 配置——无需手动管路径。
 
 ---
 
 ## 升级
 
 ```bash
-npx skills update -g -y
+npx skills update wind-mcp-skill -g -y
 ```
+
+调用时 stderr 若提示有新版，按提示走即可。
+
+---
+
+## 目录结构
+
+```
+wind-mcp-skill/
+├── SKILL.md                     # AI 加载的核心守则（数据范围 / 使用方法 / 工具表 / 注意事项 / 使用技巧 / 出错怎么办）
+├── references/
+│   └── indicators.md            # 行情字段 indexes 中文清单（按类别分组）
+├── scripts/
+│   ├── cli.mjs                  # MCP 调用主入口
+│   └── update-check.mjs         # 升级感知探活
+└── README.md
+```
+
+详细的工具列表 / 入参 schema / 字段说明见 [SKILL.md](./SKILL.md)。
