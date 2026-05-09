@@ -69,3 +69,4 @@ wind-mcp-skill/
 ```
 
 详细的工具列表 / 入参 schema / 字段说明见 [SKILL.md](./SKILL.md)。
+(yyb)
