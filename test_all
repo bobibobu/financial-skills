@@ -1,0 +1,616 @@
+## Wind MCP Tool 路由测试用例
+
+---
+
+### vserver_financial_docs — get_financial_news
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FN-001 | 正样例 | 最近有什么关于宁德时代的新能源行业分析文章？ | get_financial_news | 明确请求第三方媒体行业分析 |
+| TC-FN-002 | 正样例 | 帮我找一下昨天市场上关于降息的财经快讯 | get_financial_news | 明确请求第三方新闻/快讯 |
+| TC-FN-003 | 正样例 | 分析师对半导体板块的最新观点是什么？ | get_financial_news | 明确请求分析师评论/观点 |
+| TC-FN-004 | 正样例 | 最近有哪些关于AI算力赛道的深度报道？ | get_financial_news | 明确请求第三方深度报道 |
+| TC-FN-005 | 负样例 | 宁德时代发布了2024年年报，帮我看看里面的营收数据 | NOT get_financial_news | 用户要的是公司官方年报内容，不是第三方报道 |
+| TC-FN-006 | 负样例 | 贵州茅台的分红方案公告出来了吗？ | NOT get_financial_news | 分红通知属于公司官方公告 |
+| TC-FN-007 | 负样例 | 宁德时代2024年第一季度的季报在哪里看？ | NOT get_financial_news | 季报属于官方监管披露文件 |
+| TC-FN-008 | 边界 | 宁德时代Q1业绩超预期，市场怎么看？ | get_financial_news | "市场怎么看"明确指向第三方观点，但"业绩超预期"可能先触发对公告的查询；需确认路由稳定性 |
+
+---
+
+### vserver_financial_docs — get_company_announcements
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-CA-001 | 正样例 | 贵州茅台最近的董事会决议公告 | get_company_announcements | 明确请求官方临时公告文档 |
+| TC-CA-002 | 正样例 | 宁德时代IPO时的招股说明书 | get_company_announcements | 招股说明书属于官方披露文件 |
+| TC-CA-003 | 正样例 | 比亚迪2024年半年报的完整内容 | get_company_announcements | 明确请求官方定期报告 |
+| TC-CA-004 | 正样例 | 隆基绿能最近的股权变动公告 | get_company_announcements | 明确请求官方临时公告 |
+| TC-CA-005 | 负样例 | 最近分析师对宁德时代的研报观点汇总 | NOT get_company_announcements | 分析师研报属于第三方内容 |
+| TC-CA-006 | 负样例 | 市场上关于贵州茅台分红的讨论 | NOT get_company_announcements | 市场讨论属于第三方新闻/评论 |
+| TC-CA-007 | 负样例 | 新能源行业最近有什么热点新闻？ | NOT get_company_announcements | 行业热点新闻属于第三方媒体报道 |
+| TC-CA-008 | 边界 | 宁德时代2024年营收是多少？ | get_stock_fundamentals | "营收"是结构化财务指标，但用户表述"2024年营收"可能让系统误匹配到"2024年年报"（announcements） |
+
+---
+
+### vserver_stock_data — get_stock_basicinfo
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-SB-001 | 正样例 | 宁德时代是做什么行业的？ | get_stock_basicinfo | 主营业务/行业分类属于基本档案 |
+| TC-SB-002 | 正样例 | 贵州茅台的董事长是谁，公司什么时候成立的？ | get_stock_basicinfo | 法定代表人/成立日期属于基本档案 |
+| TC-SB-003 | 正样例 | 宁德时代属于哪些指数成份股？ | get_stock_basicinfo | 指数成份归属在 basicinfo 里 |
+| TC-SB-004 | 正样例 | 隆基绿能的历史曾用名和上市板信息 | get_stock_basicinfo | 历史曾用名和上市板属于基本档案 |
+| TC-SB-005 | 负样例 | 宁德时代的毛利率和净利率是多少？ | NOT get_stock_basicinfo | 盈利能力指标属于基本面财务数据 |
+| TC-SB-006 | 负样例 | 贵州茅台的总股本和流通股分别是多少？ | NOT get_stock_basicinfo | 股本结构属于股东数据 |
+| TC-SB-007 | 负样例 | 比亚迪今天的股价走势怎么样？ | NOT get_stock_basicinfo | 股价走势属于行情数据 |
+| TC-SB-008 | 边界 | 宁德时代戴帽了吗？ | get_stock_basicinfo | ST状态在basicinfo里，但用户也可能误以为是风险事件（get_stock_events） |
+
+---
+
+### vserver_stock_data — get_stock_equity_holders
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-SE-001 | 正样例 | 宁德时代的前十大股东都有谁？ | get_stock_equity_holders | 明确请求股东持仓信息 |
+| TC-SE-002 | 正样例 | 贵州茅台的限售股什么时候解禁？ | get_stock_equity_holders | 明确请求限售解禁时间表 |
+| TC-SE-003 | 正样例 | 比亚迪的机构股东持仓比例变化 | get_stock_equity_holders | 明确请求机构股东持仓 |
+| TC-SE-004 | 正样例 | 隆基绿能的实际控制人是谁？ | get_stock_equity_holders | 明确请求实际控制人信息 |
+| TC-SE-005 | 负样例 | 宁德时代的ROE是多少？ | NOT get_stock_equity_holders | ROE属于基本面财务指标 |
+| TC-SE-006 | 负样例 | 贵州茅台今天的收盘价 | NOT get_stock_equity_holders | 收盘价属于行情指标 |
+| TC-SE-007 | 负样例 | 比亚迪的主营业务是什么？ | NOT get_stock_equity_holders | 主营业务属于基本档案 |
+| TC-SE-008 | 边界 | 宁德时代大股东最近有减持吗？ | get_stock_equity_holders | 大股东减持在equity_holders里，但"减持"也可能被误匹配到events |
+
+---
+
+### vserver_stock_data — get_stock_quote
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-SQ-001 | 正样例 | 宁德时代现在股价多少？ | get_stock_quote | 明确请求实时价格 |
+| TC-SQ-002 | 正样例 | 贵州茅台今天盘中成交量和换手率 | get_stock_quote | 明确请求实时交易活动 |
+| TC-SQ-003 | 正样例 | 比亚迪下午2点半的股价 | get_stock_quote | 明确请求特定时间点的分钟级价格 |
+| TC-SQ-004 | 正样例 | 隆基绿能现在的买卖盘情况 | get_stock_quote | 明确请求实时买卖盘 |
+| TC-SQ-005 | 负样例 | 宁德时代最近5天的收盘价 | NOT get_stock_quote | 区间收盘价属于价格指标 |
+| TC-SQ-006 | 负样例 | 宁德时代今天的MACD金叉了吗？ | NOT get_stock_quote | MACD属于技术指标 |
+| TC-SQ-007 | 负样例 | 贵州茅台的历史K线数据 | NOT get_stock_quote | 历史K线属于日线历史行情 |
+| TC-SQ-008 | 边界 | 宁德时代今天开盘以来的走势 | get_stock_quote | "走势"在日内语境下通常指分钟级实时数据，但用户也可能想要日K线 |
+
+---
+
+### vserver_stock_data — get_stock_price_indicators
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-SP-001 | 正样例 | 宁德时代最近10个交易日的开盘价和收盘价 | get_stock_price_indicators | 明确请求区间价格指标 |
+| TC-SP-002 | 正样例 | 贵州茅台本周的最高价和最低价 | get_stock_price_indicators | 明确请求区间高低价 |
+| TC-SP-003 | 正样例 | 比亚迪3月份的涨跌幅 | get_stock_price_indicators | 明确请求区间涨跌状态 |
+| TC-SP-004 | 正样例 | 隆基绿能近一周的收盘价序列 | get_stock_price_indicators | 明确请求区间收盘价数据 |
+| TC-SP-005 | 负样例 | 宁德时代现在的股价是多少？ | NOT get_stock_price_indicators | "现在"属于实时行情，应走quote |
+| TC-SP-006 | 负样例 | 贵州茅台的MACD指标 | NOT get_stock_price_indicators | MACD属于技术指标 |
+| TC-SP-007 | 负样例 | 比亚迪的总市值是多少？ | NOT get_stock_price_indicators | 总市值需要计算，不属于纯价格指标 |
+| TC-SP-008 | 边界 | 宁德时代今天开盘价和昨天收盘价对比 | get_stock_price_indicators | 涉及两个时间点的价格，但都属于价格指标范畴 |
+
+---
+
+### vserver_stock_data — get_stock_kline
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-SK-001 | 正样例 | 宁德时代最近一年的日K线数据 | get_stock_kline | 明确请求日线K线历史 |
+| TC-SK-002 | 正样例 | 贵州茅台2023年的OHLCV数据 | get_stock_kline | 明确请求历史每日开高低收量 |
+| TC-SK-003 | 正样例 | 比亚迪上市以来的K线走势 | get_stock_kline | 明确请求历史K线 |
+| TC-SK-004 | 正样例 | 隆基绿能近30个交易日的K线 | get_stock_kline | 明确请求日线K线 |
+| TC-SK-005 | 负样例 | 宁德时代现在的股价 | NOT get_stock_kline | 实时价格应走quote |
+| TC-SK-006 | 负样例 | 贵州茅台最近5天的收盘价 | NOT get_stock_kline | 短期价格指标应走price_indicators |
+| TC-SK-007 | 负样例 | 比亚迪今天的分钟级走势 | NOT get_stock_kline | 分钟级日内数据应走quote |
+| TC-SK-008 | 边界 | 宁德时代最近一周的K线和成交量 | get_stock_kline | K线和成交量都在kline里，但"成交量"单独提可能被误认为quote |
+
+---
+
+### vserver_stock_data — get_stock_technicals
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-ST-001 | 正样例 | 宁德时代的MACD和KDJ指标 | get_stock_technicals | 明确请求技术分析信号 |
+| TC-ST-002 | 正样例 | 贵州茅台最近一个月的融资融券数据 | get_stock_technicals | 明确请求融资融券数据 |
+| TC-ST-003 | 正样例 | 比亚迪今天有没有上龙虎榜？ | get_stock_technicals | 明确请求龙虎榜活动 |
+| TC-ST-004 | 正样例 | 隆基绿能最近创了新高吗？ | get_stock_technicals | 明确请求历史新高检测 |
+| TC-ST-005 | 负样例 | 宁德时代现在的股价 | NOT get_stock_technicals | 实时价格应走quote |
+| TC-ST-006 | 负样例 | 贵州茅台的ROE是多少？ | NOT get_stock_technicals | ROE属于基本面财务指标 |
+| TC-ST-007 | 负样例 | 比亚迪最近5天的收盘价 | NOT get_stock_technicals | 短期价格指标应走price_indicators |
+| TC-ST-008 | 边界 | 宁德时代最近一周相对大盘的表现如何？ | get_stock_technicals | 相对大盘表现在technicals里，但"表现"也可能被误匹配到fundamentals |
+
+---
+
+### vserver_stock_data — get_stock_fundamentals
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-SF-001 | 正样例 | 宁德时代近三年的ROE走势 | get_stock_fundamentals | 明确请求盈利能力指标 |
+| TC-SF-002 | 正样例 | 贵州茅台2024年的净利润和营收增速 | get_stock_fundamentals | 明确请求利润表+增长率 |
+| TC-SF-003 | 正样例 | 银行股的净息差和不良贷款率对比 | get_stock_fundamentals | 银行业专项指标 |
+| TC-SF-004 | 正样例 | 比亚迪的PE估值在历史什么分位？ | get_stock_fundamentals | 明确请求估值指标及历史分位数 |
+| TC-SF-005 | 负样例 | 宁德时代的Beta值和夏普比率是多少？ | NOT get_stock_fundamentals | Beta/夏普属于风险指标 |
+| TC-SF-006 | 负样例 | 贵州茅台今天开盘多少钱？ | NOT get_stock_fundamentals | 实时开盘价属于行情指标 |
+| TC-SF-007 | 负样例 | 比亚迪的总股本有多少？ | NOT get_stock_fundamentals | 股本结构属于股东数据 |
+| TC-SF-008 | 边界 | 宁德时代的资产负债率是高还是低？ | get_stock_fundamentals | 资产负债率在 fundamentals 的"杠杆乘数"里，但用户也可能误以为是风险指标 |
+
+---
+
+### vserver_stock_data — get_stock_events
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-EV-001 | 正样例 | 宁德时代IPO时的战略配售情况 | get_stock_events | 明确请求IPO详情 |
+| TC-EV-002 | 正样例 | 贵州茅台最近有增发计划吗？ | get_stock_events | 明确请求增发进度 |
+| TC-EV-003 | 正样例 | 比亚迪的并购历史 | get_stock_events | 明确请求并购指标 |
+| TC-EV-004 | 正样例 | 隆基绿能最近有没有收到监管处罚？ | get_stock_events | 明确请求合规与监管事件 |
+| TC-EV-005 | 负样例 | 宁德时代的ROE走势 | NOT get_stock_events | ROE属于基本面财务指标 |
+| TC-EV-006 | 负样例 | 贵州茅台的董事长是谁？ | NOT get_stock_events | 董事长信息属于基本档案 |
+| TC-EV-007 | 负样例 | 比亚迪今天的股价 | NOT get_stock_events | 实时价格属于行情数据 |
+| TC-EV-008 | 边界 | 宁德时代最近分红了吗？ | get_stock_events | 分红历史在events里，但"分红公告"也可能被误匹配到announcements |
+
+---
+
+### vserver_stock_data — get_risk_metrics
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-RM-001 | 正样例 | 宁德时代的Beta值是多少？ | get_risk_metrics | 明确请求Beta指标 |
+| TC-RM-002 | 正样例 | 贵州茅台近一年的波动率和夏普比率 | get_risk_metrics | 明确请求波动率和夏普比率 |
+| TC-RM-003 | 正样例 | 比亚迪的最大回撤和下跌天数 | get_risk_metrics | 明确请求最大回撤 |
+| TC-RM-004 | 正样例 | 隆基绿能的VaR值是多少？ | get_risk_metrics | 明确请求在险价值 |
+| TC-RM-005 | 负样例 | 宁德时代的毛利率是多少？ | NOT get_risk_metrics | 毛利率属于基本面财务指标 |
+| TC-RM-006 | 负样例 | 贵州茅台的董事长是谁？ | NOT get_risk_metrics | 董事长信息属于基本档案 |
+| TC-RM-007 | 负样例 | 比亚迪今天的股价 | NOT get_risk_metrics | 实时价格属于行情数据 |
+| TC-RM-008 | 边界 | 宁德时代的资产负债率属于安全范围吗？ | get_risk_metrics | 资产负债率在risk_metrics的"财务安全比率"里，但也在fundamentals的"杠杆乘数"里 |
+
+---
+
+### vserver_fund_data — get_fund_info
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FI-001 | 正样例 | 易方达蓝筹精选的基金经理是谁？ | get_fund_info | 明确请求基金经理详情 |
+| TC-FI-002 | 正样例 | 华夏上证50ETF的跟踪指数和费率 | get_fund_info | 明确请求指数跟踪信息和费率 |
+| TC-FI-003 | 正样例 | 中欧医疗健康A的成立日期和发行规模 | get_fund_info | 明确请求发行数据 |
+| TC-FI-004 | 正样例 | 广发科技先锋的投资风格是什么？ | get_fund_info | 明确请求投资类型与风格 |
+| TC-FI-005 | 负样例 | 易方达蓝筹精选的重仓股有哪些？ | NOT get_fund_info | 重仓股属于持仓数据 |
+| TC-FI-006 | 负样例 | 华夏上证50ETF最近一年的收益率 | NOT get_fund_info | 收益率属于业绩表现 |
+| TC-FI-007 | 负样例 | 中欧医疗健康A的申购赎回情况 | NOT get_fund_info | 申赎情况属于持有人信息 |
+| TC-FI-008 | 边界 | 易方达蓝筹精选的规模有多大？ | get_fund_info | 基金规模在info里，但"规模"也可能被误匹配到业绩表现 |
+
+---
+
+### vserver_fund_data — get_fund_holdings
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FH-001 | 正样例 | 易方达蓝筹精选的重仓股有哪些？ | get_fund_holdings | 明确请求重仓股 |
+| TC-FH-002 | 正样例 | 华夏上证50ETF的行业配置分布 | get_fund_holdings | 明确请求行业配置 |
+| TC-FH-003 | 正样例 | 中欧医疗健康A的债券持仓 | get_fund_holdings | 明确请求重仓债券 |
+| TC-FH-004 | 正样例 | 广发科技先锋的股票仓位变化 | get_fund_holdings | 明确请求资产类别构成及变动 |
+| TC-FH-005 | 负样例 | 易方达蓝筹精选的基金经理是谁？ | NOT get_fund_holdings | 基金经理属于基本信息 |
+| TC-FH-006 | 负样例 | 华夏上证50ETF最近一年的收益率 | NOT get_fund_holdings | 收益率属于业绩表现 |
+| TC-FH-007 | 负样例 | 中欧医疗健康A的分红情况 | NOT get_fund_holdings | 分红属于财务数据 |
+| TC-FH-008 | 边界 | 易方达蓝筹精选的持仓集中度如何？ | get_fund_holdings | 集中度需要基于持仓数据计算，但"集中度"表述可能让系统误匹配到业绩风险指标 |
+
+---
+
+### vserver_fund_data — get_fund_shareholders
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FS-001 | 正样例 | 易方达蓝筹精选的机构持有比例 | get_fund_shareholders | 明确请求投资者构成 |
+| TC-FS-002 | 正样例 | 华夏上证50ETF的持有人户数 | get_fund_shareholders | 明确请求持有人户数 |
+| TC-FS-003 | 正样例 | 中欧医疗健康A最近一季度的申购赎回情况 | get_fund_shareholders | 明确请求申赎情况 |
+| TC-FS-004 | 正样例 | 广发科技先锋的份额变动率 | get_fund_shareholders | 明确请求份额变动 |
+| TC-FS-005 | 负样例 | 易方达蓝筹精选的重仓股有哪些？ | NOT get_fund_shareholders | 重仓股属于持仓数据 |
+| TC-FS-006 | 负样例 | 华夏上证50ETF的基金经理是谁？ | NOT get_fund_shareholders | 基金经理属于基本信息 |
+| TC-FS-007 | 负样例 | 中欧医疗健康A的净值增长率 | NOT get_fund_shareholders | 净值增长属于业绩表现 |
+| TC-FS-008 | 边界 | 易方达蓝筹精选的份额是增加还是减少了？ | get_fund_shareholders | 份额变动在shareholders里，但"增加减少"也可能被误匹配到业绩表现的净值变动 |
+
+---
+
+### vserver_fund_data — get_fund_quote
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FQ-001 | 正样例 | 华夏上证50ETF现在价格多少？ | get_fund_quote | 明确请求ETF实时价格 |
+| TC-FQ-002 | 正样例 | 易方达蓝筹精选今天的成交量 | get_fund_quote | 明确请求LOF实时交易数据 |
+| TC-FQ-003 | 正样例 | 中欧医疗健康A的盘中换手率 | get_fund_quote | 明确请求实时换手率 |
+| TC-FQ-004 | 正样例 | 广发科技先锋现在的IOPV | get_fund_quote | 明确请求ETF实时IOPV（注：IOPV也在performance里，但quote更直接） |
+| TC-FQ-005 | 负样例 | 华夏上证50ETF最近一周的收盘价 | NOT get_fund_quote | 区间收盘价属于价格指标 |
+| TC-FQ-006 | 负样例 | 易方达蓝筹精选的历史K线 | NOT get_fund_quote | 历史K线属于kline |
+| TC-FQ-007 | 负样例 | 中欧医疗健康A的净值是多少？ | NOT get_fund_quote | 基金净值属于业绩表现/财务数据 |
+| TC-FQ-008 | 边界 | 华夏上证50ETF现在的折溢价率 | get_fund_quote | 折溢价率在performance里，但"现在"的时间限定可能让系统误匹配到quote |
+
+---
+
+### vserver_fund_data — get_fund_price_indicators
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FP-001 | 正样例 | 华夏上证50ETF最近10天的开盘价和收盘价 | get_fund_price_indicators | 明确请求区间价格指标 |
+| TC-FP-002 | 正样例 | 易方达蓝筹精选本周的最高最低价 | get_fund_price_indicators | 明确请求区间高低价 |
+| TC-FP-003 | 正样例 | 中欧医疗健康A上个月的涨跌幅 | get_fund_price_indicators | 明确请求区间涨跌 |
+| TC-FP-004 | 正样例 | 广发科技先锋近一周的收盘价序列 | get_fund_price_indicators | 明确请求区间收盘价 |
+| TC-FP-005 | 负样例 | 华夏上证50ETF现在的价格 | NOT get_fund_price_indicators | 实时价格应走quote |
+| TC-FP-006 | 负样例 | 易方达蓝筹精选的净值增长率 | NOT get_fund_price_indicators | 净值增长属于业绩表现 |
+| TC-FP-007 | 负样例 | 中欧医疗健康A的历史K线 | NOT get_fund_price_indicators | 历史K线属于kline |
+| TC-FP-008 | 边界 | 华夏上证50ETF今天开盘价和昨天净值对比 | get_fund_price_indicators | 开盘价在price_indicators里，但"净值"可能让系统误匹配到performance |
+
+---
+
+### vserver_fund_data — get_fund_kline
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FK-001 | 正样例 | 华夏上证50ETF最近一年的日K线 | get_fund_kline | 明确请求日线K线历史 |
+| TC-FK-002 | 正样例 | 易方达蓝筹精选2023年的OHLCV | get_fund_kline | 明确请求历史每日开高低收量 |
+| TC-FK-003 | 正样例 | 中欧医疗健康A上市以来的K线走势 | get_fund_kline | 明确请求历史K线 |
+| TC-FK-004 | 正样例 | 广发科技先锋近30个交易日的K线 | get_fund_kline | 明确请求日线K线 |
+| TC-FK-005 | 负样例 | 华夏上证50ETF现在的价格 | NOT get_fund_kline | 实时价格应走quote |
+| TC-FK-006 | 负样例 | 易方达蓝筹精选最近5天的收盘价 | NOT get_fund_kline | 短期价格指标应走price_indicators |
+| TC-FK-007 | 负样例 | 中欧医疗健康A今天的分钟级走势 | NOT get_fund_kline | 分钟级日内数据应走quote |
+| TC-FK-008 | 边界 | 华夏上证50ETF最近一周的K线和成交量 | get_fund_kline | K线和成交量都在kline里，但"成交量"单独提可能被误认为quote |
+
+---
+
+### vserver_fund_data — get_fund_performance
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FM-001 | 正样例 | 易方达蓝筹精选最近一年的收益率 | get_fund_performance | 明确请求年化收益率 |
+| TC-FM-002 | 正样例 | 华夏上证50ETF的同类排名 | get_fund_performance | 明确请求同类排名 |
+| TC-FM-003 | 正样例 | 中欧医疗健康A的夏普比率和最大回撤 | get_fund_performance | 明确请求风险调整指标 |
+| TC-FM-004 | 正样例 | 广发科技先锋的折溢价率 | get_fund_performance | 明确请求ETF专项指标 |
+| TC-FM-005 | 负样例 | 易方达蓝筹精选的基金经理是谁？ | NOT get_fund_performance | 基金经理属于基本信息 |
+| TC-FM-006 | 负样例 | 华夏上证50ETF的重仓股 | NOT get_fund_performance | 重仓股属于持仓数据 |
+| TC-FM-007 | 负样例 | 中欧医疗健康A的申赎情况 | NOT get_fund_performance | 申赎属于持有人信息 |
+| TC-FM-008 | 边界 | 易方达蓝筹精选的Alpha和Beta | get_fund_performance | Alpha/Beta在performance里，但"Beta"也可能被误匹配到风险指标（如果stock的risk_metrics有类似表述） |
+
+---
+
+### vserver_fund_data — get_fund_financials
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FF-001 | 正样例 | 易方达蓝筹精选的季度利润 | get_fund_financials | 明确请求利润指标 |
+| TC-FF-002 | 正样例 | 华夏上证50ETF的管理费和托管费 | get_fund_financials | 明确请求费用项目 |
+| TC-FF-003 | 正样例 | 中欧医疗健康A的分红次数和总额 | get_fund_financials | 明确请求分红数据 |
+| TC-FF-004 | 正样例 | 广发科技先锋的净值增长率 | get_fund_financials | 明确请求报告期净值增长 |
+| TC-FF-005 | 负样例 | 易方达蓝筹精选的基金经理是谁？ | NOT get_fund_financials | 基金经理属于基本信息 |
+| TC-FF-006 | 负样例 | 华夏上证50ETF的重仓股 | NOT get_fund_financials | 重仓股属于持仓数据 |
+| TC-FF-007 | 负样例 | 中欧医疗健康A的收益率排名 | NOT get_fund_financials | 收益率排名属于业绩表现 |
+| TC-FF-008 | 边界 | 易方达蓝筹精选的利润和份额利润 | get_fund_financials | 利润和份额利润都在financials里，但"份额"可能让系统误匹配到shareholders |
+
+---
+
+### vserver_fund_data — get_fund_company_info
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-FC-001 | 正样例 | 易方达基金公司有多少基金经理？ | get_fund_company_info | 明确请求基金经理团队指标 |
+| TC-FC-002 | 正样例 | 华夏基金的管理规模排名 | get_fund_company_info | 明确请求公司层面AUM |
+| TC-FC-003 | 正样例 | 中欧基金公司的成立时间和注册资本 | get_fund_company_info | 明确请求公司基本信息 |
+| TC-FC-004 | 正样例 | 广发基金的股票和债券资产配置比例 | get_fund_company_info | 明确请求公司层面资产配置 |
+| TC-FC-005 | 负样例 | 易方达蓝筹精选的基金经理是谁？ | NOT get_fund_company_info | 单只基金的基金经理属于fund_info |
+| TC-FC-006 | 负样例 | 华夏上证50ETF的重仓股 | NOT get_fund_company_info | 单只基金持仓属于fund_holdings |
+| TC-FC-007 | 负样例 | 中欧医疗健康A的收益率 | NOT get_fund_company_info | 单只基金业绩属于fund_performance |
+| TC-FC-008 | 边界 | 易方达基金公司旗下哪只基金规模最大？ | get_fund_company_info | 公司旗下基金规模在company_info里，但"哪只基金"的表述可能让系统误匹配到fund_info |
+
+---
+
+### vserver_bond_data — get_bond_basicinfo
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-BB-001 | 正样例 | 24国债01的票面利率和期限 | get_bond_basicinfo | 明确请求债券发行数据 |
+| TC-BB-002 | 正样例 | 宁德时代转债的上市交易所 | get_bond_basicinfo | 明确请求交易所上市详情 |
+| TC-BB-003 | 正样例 | 22万科01的发行规模和发行日期 | get_bond_basicinfo | 明确请求发行数据 |
+| TC-BB-004 | 正样例 | 隆基转债的兑付安排 | get_bond_basicinfo | 明确请求兑付安排 |
+| TC-BB-005 | 负样例 | 24国债01的久期和凸性 | NOT get_bond_basicinfo | 久期凸性属于行情与估值数据 |
+| TC-BB-006 | 负样例 | 宁德时代发债主体的营收 | NOT get_bond_basicinfo | 发债主体财务属于issuer财务数据 |
+| TC-BB-007 | 负样例 | 22万科01今天的收盘价 | NOT get_bond_basicinfo | 交易行情属于market_data |
+| TC-BB-008 | 边界 | 宁德时代转债的转股价格 | get_bond_basicinfo | 转股价格在special_data里，但"转债"的基本信息查询可能先匹配到basicinfo |
+
+---
+
+### vserver_bond_data — get_bond_issuer_info
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-BI-001 | 正样例 | 22万科01的发债主体是哪家公司？ | get_bond_issuer_info | 明确请求发债主体公司信息 |
+| TC-BI-002 | 正样例 | 宁德时代转债的发行人行业分类 | get_bond_issuer_info | 明确请求发行人行业 |
+| TC-BI-003 | 正样例 | 隆基转债的发行人股权结构 | get_bond_issuer_info | 明确请求发行人股权结构 |
+| TC-BI-004 | 正样例 | 24国债01的发行人背景 | get_bond_issuer_info | 明确请求发行人企业背景 |
+| TC-BI-005 | 负样例 | 22万科01的票面利率 | NOT get_bond_issuer_info | 票面利率属于债券基本信息 |
+| TC-BI-006 | 负样例 | 宁德时代转债的久期 | NOT get_bond_issuer_info | 久期属于行情与估值 |
+| TC-BI-007 | 负样例 | 隆基转债今天的收盘价 | NOT get_bond_issuer_info | 收盘价属于行情数据 |
+| TC-BI-008 | 边界 | 宁德时代发债主体的财务状况 | get_bond_issuer_info | "财务状况"可能在issuer_info里也有提及，但详细财务数据在bond_financial_data里 |
+
+---
+
+### vserver_bond_data — get_bond_market_data
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-BM-001 | 正样例 | 24国债01的最新收益率和估价 | get_bond_market_data | 明确请求估值分析 |
+| TC-BM-002 | 正样例 | 宁德时代转债的久期和凸性 | get_bond_market_data | 明确请求风险收益指标 |
+| TC-BM-003 | 正样例 | 22万科01的利差是多少？ | get_bond_market_data | 明确请求利差 |
+| TC-BM-004 | 正样例 | 隆基转债今天的交易报价 | get_bond_market_data | 明确请求交易行情 |
+| TC-BM-005 | 负样例 | 24国债01的票面利率 | NOT get_bond_market_data | 票面利率属于基本信息 |
+| TC-BM-006 | 负样例 | 宁德时代发债主体的营收 | NOT get_bond_market_data | 发债主体财务属于issuer财务 |
+| TC-BM-007 | 负样例 | 22万科01的发行规模 | NOT get_bond_market_data | 发行规模属于基本信息 |
+| TC-BM-008 | 边界 | 宁德时代转债现在的溢价率 | get_bond_market_data | 溢价率在market_data里，但"转债溢价"也可能被误匹配到special_data的可转债条款 |
+
+---
+
+### vserver_bond_data — get_bond_financial_data
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-BF-001 | 正样例 | 宁德时代发债主体2024年的营收和利润 | get_bond_financial_data | 明确请求发债主体财务报表 |
+| TC-BF-002 | 正样例 | 万科的资产负债率 | get_bond_financial_data | 明确请求发债主体财务指标 |
+| TC-BF-003 | 正样例 | 隆基绿能发债主体的现金流情况 | get_bond_financial_data | 明确请求发债主体财务表现 |
+| TC-BF-004 | 正样例 | 比亚迪发债主体的净利润增速 | get_bond_financial_data | 明确请求发债主体层面财务指标 |
+| TC-BF-005 | 负样例 | 宁德时代转债的票面利率 | NOT get_bond_financial_data | 票面利率属于债券基本信息 |
+| TC-BF-006 | 负样例 | 22万科01的久期 | NOT get_bond_financial_data | 久期属于行情与估值 |
+| TC-BF-007 | 负样例 | 隆基转债的发行人行业 | NOT get_bond_financial_data | 发行人行业属于issuer_info |
+| TC-BF-008 | 边界 | 宁德时代发债主体的ROE | get_bond_financial_data | ROE在bond_financial_data里，但用户也可能直接问"宁德时代的ROE"而路由到stock的fundamentals |
+
+---
+
+### vserver_global_stock_data — get_global_stock_basicinfo
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GB-001 | 正样例 | 腾讯控股是做什么业务的？ | get_global_stock_basicinfo | 明确请求港股主营业务 |
+| TC-GB-002 | 正样例 | 特斯拉的成立时间和上市交易所 | get_global_stock_basicinfo | 明确请求美股上市信息 |
+| TC-GB-003 | 正样例 | 阿里巴巴属于哪些指数成份股？ | get_global_stock_basicinfo | 明确请求指数成份归属 |
+| TC-GB-004 | 正样例 | 英伟达的历史曾用名 | get_global_stock_basicinfo | 明确请求公司身份信息 |
+| TC-GB-005 | 负样例 | 腾讯控股的ROE是多少？ | NOT get_global_stock_basicinfo | ROE属于全球股票基本面 |
+| TC-GB-006 | 负样例 | 特斯拉今天的股价 | NOT get_global_stock_basicinfo | 实时股价属于全球股票quote |
+| TC-GB-007 | 负样例 | 阿里巴巴的总股本 | NOT get_global_stock_basicinfo | 股本属于全球股票equity_holders |
+| TC-GB-008 | 边界 | 腾讯控股的行业分类 | get_global_stock_basicinfo | 行业分类在basicinfo里，但用户也可能误以为是基本面分析 |
+
+---
+
+### vserver_global_stock_data — get_global_stock_equity_holders
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GE-001 | 正样例 | 腾讯控股的主要股东有哪些？ | get_global_stock_equity_holders | 明确请求主要股东 |
+| TC-GE-002 | 正样例 | 特斯拉的机构股东持仓 | get_global_stock_equity_holders | 明确请求机构股东 |
+| TC-GE-003 | 正样例 | 阿里巴巴的限售解禁时间表 | get_global_stock_equity_holders | 明确请求限售解禁 |
+| TC-GE-004 | 正样例 | 英伟达的总股本和流通股本 | get_global_stock_equity_holders | 明确请求股本结构 |
+| TC-GE-005 | 负样例 | 腾讯控股的ROE | NOT get_global_stock_equity_holders | ROE属于基本面 |
+| TC-GE-006 | 负样例 | 特斯拉今天的股价 | NOT get_global_stock_equity_holders | 股价属于quote |
+| TC-GE-007 | 负样例 | 阿里巴巴的主营业务 | NOT get_global_stock_equity_holders | 主营业务属于basicinfo |
+| TC-GE-008 | 边界 | 腾讯控股大股东最近有减持吗？ | get_global_stock_equity_holders | 大股东减持在equity_holders里，但"减持"也可能被误匹配到events |
+
+---
+
+### vserver_global_stock_data — get_global_stock_quote
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GQ-001 | 正样例 | 腾讯控股现在股价多少？ | get_global_stock_quote | 明确请求港股实时价格 |
+| TC-GQ-002 | 正样例 | 特斯拉今天的成交量 | get_global_stock_quote | 明确请求美股实时交易活动 |
+| TC-GQ-003 | 正样例 | 阿里巴巴盘中的换手率 | get_global_stock_quote | 明确请求实时换手率 |
+| TC-GQ-004 | 正样例 | 英伟达现在的买卖盘 | get_global_stock_quote | 明确请求实时买卖盘 |
+| TC-GQ-005 | 负样例 | 腾讯控股最近5天的收盘价 | NOT get_global_stock_quote | 区间收盘价属于price_indicators |
+| TC-GQ-006 | 负样例 | 特斯拉的MACD指标 | NOT get_global_stock_quote | MACD属于technicals |
+| TC-GQ-007 | 负样例 | 阿里巴巴的历史K线 | NOT get_global_stock_quote | 历史K线属于kline |
+| TC-GQ-008 | 边界 | 腾讯控股今天开盘以来的走势 | get_global_stock_quote | "走势"在日内语境下通常指分钟级实时，但用户也可能想要日K线 |
+
+---
+
+### vserver_global_stock_data — get_global_stock_price_indicators
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GP-001 | 正样例 | 腾讯控股最近10天的开盘价和收盘价 | get_global_stock_price_indicators | 明确请求区间价格指标 |
+| TC-GP-002 | 正样例 | 特斯拉本周的最高最低价 | get_global_stock_price_indicators | 明确请求区间高低价 |
+| TC-GP-003 | 正样例 | 阿里巴巴上个月的涨跌幅 | get_global_stock_price_indicators | 明确请求区间涨跌 |
+| TC-GP-004 | 正样例 | 英伟达近一周的收盘价序列 | get_global_stock_price_indicators | 明确请求区间收盘价 |
+| TC-GP-005 | 负样例 | 腾讯控股现在的股价 | NOT get_global_stock_price_indicators | 实时价格应走quote |
+| TC-GP-006 | 负样例 | 特斯拉的MACD | NOT get_global_stock_price_indicators | MACD属于technicals |
+| TC-GP-007 | 负样例 | 阿里巴巴的总市值 | NOT get_global_stock_price_indicators | 总市值需要计算 |
+| TC-GP-008 | 边界 | 腾讯控股今天开盘价和昨天收盘价对比 | get_global_stock_price_indicators | 涉及两个时间点的价格，但都属于价格指标范畴 |
+
+---
+
+### vserver_global_stock_data — get_global_stock_kline
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GK-001 | 正样例 | 腾讯控股最近一年的日K线 | get_global_stock_kline | 明确请求日线K线历史 |
+| TC-GK-002 | 正样例 | 特斯拉2023年的OHLCV | get_global_stock_kline | 明确请求历史每日开高低收量 |
+| TC-GK-003 | 正样例 | 阿里巴巴上市以来的K线走势 | get_global_stock_kline | 明确请求历史K线 |
+| TC-GK-004 | 正样例 | 英伟达近30个交易日的K线 | get_global_stock_kline | 明确请求日线K线 |
+| TC-GK-005 | 负样例 | 腾讯控股现在的股价 | NOT get_global_stock_kline | 实时价格应走quote |
+| TC-GK-006 | 负样例 | 特斯拉最近5天的收盘价 | NOT get_global_stock_kline | 短期价格指标应走price_indicators |
+| TC-GK-007 | 负样例 | 阿里巴巴今天的分钟级走势 | NOT get_global_stock_kline | 分钟级日内数据应走quote |
+| TC-GK-008 | 边界 | 腾讯控股最近一周的K线和成交量 | get_global_stock_kline | K线和成交量都在kline里，但"成交量"单独提可能被误认为quote |
+
+---
+
+### vserver_global_stock_data — get_global_stock_technicals
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GT-001 | 正样例 | 腾讯控股的MACD和RSI | get_global_stock_technicals | 明确请求技术分析信号 |
+| TC-GT-002 | 正样例 | 特斯拉最近一个月的融资融券 | get_global_stock_technicals | 明确请求融资融券数据 |
+| TC-GT-003 | 正样例 | 阿里巴巴相对大盘的表现 | get_global_stock_technicals | 明确请求相对大盘表现 |
+| TC-GT-004 | 正样例 | 英伟达最近创了新高吗？ | get_global_stock_technicals | 明确请求历史新高检测 |
+| TC-GT-005 | 负样例 | 腾讯控股现在的股价 | NOT get_global_stock_technicals | 实时价格应走quote |
+| TC-GT-006 | 负样例 | 特斯拉的ROE | NOT get_global_stock_technicals | ROE属于基本面 |
+| TC-GT-007 | 负样例 | 阿里巴巴最近5天的收盘价 | NOT get_global_stock_technicals | 短期价格应走price_indicators |
+| TC-GT-008 | 边界 | 腾讯控股最近一周相对恒指的表现 | get_global_stock_technicals | 相对大盘表现在technicals里，但"恒指"可能让系统误匹配到index_data |
+
+---
+
+### vserver_global_stock_data — get_global_stock_fundamentals
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GF-001 | 正样例 | 腾讯控股近三年的ROE走势 | get_global_stock_fundamentals | 明确请求盈利能力 |
+| TC-GF-002 | 正样例 | 特斯拉2024年的净利润和营收增速 | get_global_stock_fundamentals | 明确请求利润表+增长率 |
+| TC-GF-003 | 正样例 | 阿里巴巴的PE估值在历史什么分位？ | get_global_stock_fundamentals | 明确请求估值指标及历史分位数 |
+| TC-GF-004 | 正样例 | 英伟达的资产负债率 | get_global_stock_fundamentals | 明确请求资产负债表项目 |
+| TC-GF-005 | 负样例 | 腾讯控股的Beta值 | NOT get_global_stock_fundamentals | Beta属于风险指标 |
+| TC-GF-006 | 负样例 | 特斯拉今天的开盘价 | NOT get_global_stock_fundamentals | 开盘价属于行情指标 |
+| TC-GF-007 | 负样例 | 阿里巴巴的总股本 | NOT get_global_stock_fundamentals | 股本属于equity_holders |
+| TC-GF-008 | 边界 | 腾讯控股的资产负债率安全吗？ | get_global_stock_fundamentals | 资产负债率在fundamentals的杠杆乘数里，但用户也可能误以为是风险指标 |
+
+---
+
+### vserver_global_stock_data — get_global_stock_events
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GV-001 | 正样例 | 腾讯控股IPO时的详情 | get_global_stock_events | 明确请求IPO详情 |
+| TC-GV-002 | 正样例 | 特斯拉最近有增发计划吗？ | get_global_stock_events | 明确请求增发进度 |
+| TC-GV-003 | 正样例 | 阿里巴巴的分红历史 | get_global_stock_events | 明确请求分红历史 |
+| TC-GV-004 | 正样例 | 英伟达最近的合规事件 | get_global_stock_events | 明确请求合规与监管事件 |
+| TC-GV-005 | 负样例 | 腾讯控股的ROE | NOT get_global_stock_events | ROE属于基本面 |
+| TC-GV-006 | 负样例 | 特斯拉的董事长是谁 | NOT get_global_stock_events | 董事长属于basicinfo |
+| TC-GV-007 | 负样例 | 阿里巴巴今天的股价 | NOT get_global_stock_events | 股价属于quote |
+| TC-GV-008 | 边界 | 腾讯控股最近分红了吗？ | get_global_stock_events | 分红历史在events里，但"分红公告"也可能被误匹配到announcements |
+
+---
+
+### vserver_global_stock_data — get_global_stock_risk_metrics
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-GR-001 | 正样例 | 腾讯控股的Beta值是多少？ | get_global_stock_risk_metrics | 明确请求Beta |
+| TC-GR-002 | 正样例 | 特斯拉近一年的波动率和夏普比率 | get_global_stock_risk_metrics | 明确请求波动率和夏普 |
+| TC-GR-003 | 正样例 | 阿里巴巴的最大回撤 | get_global_stock_risk_metrics | 明确请求最大回撤 |
+| TC-GR-004 | 正样例 | 英伟达的VaR值 | get_global_stock_risk_metrics | 明确请求在险价值 |
+| TC-GR-005 | 负样例 | 腾讯控股的毛利率 | NOT get_global_stock_risk_metrics | 毛利率属于基本面 |
+| TC-GR-006 | 负样例 | 特斯拉的董事长 | NOT get_global_stock_risk_metrics | 董事长属于basicinfo |
+| TC-GR-007 | 负样例 | 阿里巴巴今天的股价 | NOT get_global_stock_risk_metrics | 股价属于quote |
+| TC-GR-008 | 边界 | 腾讯控股的资产负债率安全吗？ | get_global_stock_risk_metrics | 资产负债率在risk_metrics的财务安全比率里，但也在fundamentals的杠杆乘数里 |
+
+---
+
+### vserver_index_data — get_index_basicinfo
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-IB-001 | 正样例 | 沪深300指数的发布机构和基日 | get_index_basicinfo | 明确请求指数基本档案 |
+| TC-IB-002 | 正样例 | 中证500指数有多少只成份股？ | get_index_basicinfo | 明确请求成份股数量 |
+| TC-IB-003 | 正样例 | 创业板指的行业分布 | get_index_basicinfo | 明确请求指数分类 |
+| TC-IB-004 | 正样例 | 科创50的计算方法 | get_index_basicinfo | 明确请求计算方法 |
+| TC-IB-005 | 负样例 | 沪深300最近5天的涨跌幅 | NOT get_index_basicinfo | 涨跌幅属于行情指标 |
+| TC-IB-006 | 负样例 | 中证500的MACD | NOT get_index_basicinfo | MACD属于技术指标 |
+| TC-IB-007 | 负样例 | 创业板指的PE估值 | NOT get_index_basicinfo | PE属于基本面与估值 |
+| TC-IB-008 | 边界 | 科创50的成份股名单 | get_index_basicinfo | 成份股名单在basicinfo里，但用户也可能想要成份股的详细数据（可能需要analytics） |
+
+---
+
+### vserver_index_data — get_index_quote
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-IQ-001 | 正样例 | 沪深300现在多少点？ | get_index_quote | 明确请求实时指数点位 |
+| TC-IQ-002 | 正样例 | 中证500今天的成交量和成交额 | get_index_quote | 明确请求实时成交数据 |
+| TC-IQ-003 | 正样例 | 创业板指今天的涨跌幅 | get_index_quote | 明确请求实时涨跌幅 |
+| TC-IQ-004 | 正样例 | 科创50现在的开盘价 | get_index_quote | 明确请求实时开盘价 |
+| TC-IQ-005 | 负样例 | 沪深300最近5天的收盘价 | NOT get_index_quote | 区间收盘价属于price_indicators |
+| TC-IQ-006 | 负样例 | 中证500的历史K线 | NOT get_index_quote | 历史K线属于kline |
+| TC-IQ-007 | 负样例 | 创业板指的成份股 | NOT get_index_quote | 成份股属于basicinfo |
+| TC-IQ-008 | 边界 | 科创50今天的走势 | get_index_quote | "走势"在日内语境下通常指实时，但用户也可能想要日K线 |
+
+---
+
+### vserver_index_data — get_index_price_indicators
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-IP-001 | 正样例 | 沪深300最近10天的开盘价和收盘价 | get_index_price_indicators | 明确请求区间价格指标 |
+| TC-IP-002 | 正样例 | 中证500本周的最高最低价 | get_index_price_indicators | 明确请求区间高低价 |
+| TC-IP-003 | 正样例 | 创业板指上个月的涨跌幅 | get_index_price_indicators | 明确请求区间涨跌 |
+| TC-IP-004 | 正样例 | 科创50近一周的收盘价序列 | get_index_price_indicators | 明确请求区间收盘价 |
+| TC-IP-005 | 负样例 | 沪深300现在的点位 | NOT get_index_price_indicators | 实时点位应走quote |
+| TC-IP-006 | 负样例 | 中证500的MACD | NOT get_index_price_indicators | MACD属于technicals |
+| TC-IP-007 | 负样例 | 创业板指的PE | NOT get_index_price_indicators | PE属于基本面与估值 |
+| TC-IP-008 | 边界 | 沪深300今天开盘价和昨天收盘价对比 | get_index_price_indicators | 涉及两个时间点的价格，但都属于价格指标范畴 |
+
+---
+
+### vserver_index_data — get_index_kline
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-IK-001 | 正样例 | 沪深300最近一年的日K线 | get_index_kline | 明确请求日线K线历史 |
+| TC-IK-002 | 正样例 | 中证500 2023年的OHLCV | get_index_kline | 明确请求历史每日开高低收量 |
+| TC-IK-003 | 正样例 | 创业板指上市以来的K线走势 | get_index_kline | 明确请求历史K线 |
+| TC-IK-004 | 正样例 | 科创50近30个交易日的K线 | get_index_kline | 明确请求日线K线 |
+| TC-IK-005 | 负样例 | 沪深300现在的点位 | NOT get_index_kline | 实时点位应走quote |
+| TC-IK-006 | 负样例 | 中证500最近5天的收盘价 | NOT get_index_kline | 短期价格指标应走price_indicators |
+| TC-IK-007 | 负样例 | 创业板指今天的分钟级走势 | NOT get_index_kline | 分钟级日内数据应走quote |
+| TC-IK-008 | 边界 | 沪深300最近一周的K线和成交量 | get_index_kline | K线和成交量都在kline里，但"成交量"单独提可能被误认为quote |
+
+---
+
+### vserver_index_data — get_index_technicals
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-IT-001 | 正样例 | 沪深300的MACD和KDJ | get_index_technicals | 明确请求技术分析信号 |
+| TC-IT-002 | 正样例 | 中证500的多周期涨跌幅 | get_index_technicals | 明确请求多周期涨跌幅 |
+| TC-IT-003 | 正样例 | 创业板指的成交量指标 | get_index_technicals | 明确请求成交量指标 |
+| TC-IT-004 | 正样例 | 科创50的超买超卖指标 | get_index_technicals | 明确请求超买超卖 |
+| TC-IT-005 | 负样例 | 沪深300现在的点位 | NOT get_index_technicals | 实时点位应走quote |
+| TC-IT-006 | 负样例 | 中证500的PE估值 | NOT get_index_technicals | PE属于基本面与估值 |
+| TC-IT-007 | 负样例 | 创业板指的成份股 | NOT get_index_technicals | 成份股属于basicinfo |
+| TC-IT-008 | 边界 | 沪深300最近一周相对大盘的表现 | get_index_technicals | 相对表现在technicals里，但"大盘"可能让系统误匹配到具体股票 |
+
+---
+
+### vserver_index_data — get_index_fundamentals
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-IF-001 | 正样例 | 沪深300成份股的加权ROE | get_index_fundamentals | 明确请求成份股加权盈利能力 |
+| TC-IF-002 | 正样例 | 中证500的PE和PB估值 | get_index_fundamentals | 明确请求估值指标 |
+| TC-IF-003 | 正样例 | 创业板指的成份股营收总和 | get_index_fundamentals | 明确请求财务报表汇总 |
+| TC-IF-004 | 正样例 | 科创50的净利润增速 | get_index_fundamentals | 明确请求净利润增速 |
+| TC-IF-005 | 负样例 | 沪深300现在的点位 | NOT get_index_fundamentals | 实时点位应走quote |
+| TC-IF-006 | 负样例 | 中证500的MACD | NOT get_index_fundamentals | MACD属于技术指标 |
+| TC-IF-007 | 负样例 | 创业板指的成份股名单 | NOT get_index_fundamentals | 成份股名单属于basicinfo |
+| TC-IF-008 | 边界 | 沪深300的盈利能力怎么样？ | get_index_fundamentals | "盈利能力"在fundamentals里，但用户也可能误以为是单个股票的盈利能力而路由到stock_fundamentals |
+
+---
+
+### vserver_economic_data — get_economic_data
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-ED-001 | 正样例 | 中国最近一年的GDP增速 | get_economic_data | 明确请求宏观经济指标 |
+| TC-ED-002 | 正样例 | 美国的CPI和PPI数据 | get_economic_data | 明确请求国际宏观经济 |
+| TC-ED-003 | 正样例 | 新能源汽车产量最近5年趋势 | get_economic_data | 明确请求行业级经济指标 |
+| TC-ED-004 | 正样例 | 央行最近的货币政策数据 | get_economic_data | 明确请求货币政策数据 |
+| TC-ED-005 | 负样例 | 宁德时代的ROE | NOT get_economic_data | 个股ROE属于股票基本面 |
+| TC-ED-006 | 负样例 | 沪深300的PE估值 | NOT get_economic_data | 指数估值属于index_fundamentals |
+| TC-ED-007 | 负样例 | 华夏上证50ETF的收益率 | NOT get_economic_data | 基金收益属于fund_performance |
+| TC-ED-008 | 边界 | 中国新能源汽车行业的市场规模 | get_economic_data | 行业市场规模在economic_data里，但用户也可能误以为是index/sector数据 |
+
+---
+
+### vserver_analytics_data — get_financial_data
+
+| 用例ID | 类型 | 用户问句 | Expected Tool | 说明 |
+|--------|------|----------|---------------|------|
+| TC-AD-001 | 正样例 | 半导体行业所有上市公司的总营收 | get_financial_data | 明确请求行业级聚合计算 |
+| TC-AD-002 | 正样例 | 宁德时代和比亚迪的ROE对比排名 | get_financial_data | 明确请求多实体排名计算 |
+| TC-AD-003 | 正样例 | 银行板块的平均净息差 | get_financial_data | 明确请求板块加权平均 |
+| TC-AD-004 | 正样例 | 新能源车企的市场份额总和 | get_financial_data | 明确请求市场份额聚合 |
+| TC-AD-005 | 负样例 | 宁德时代的ROE是多少？ | NOT get_financial_data | 单个股ROE属于stock_fundamentals |
+| TC-AD-006 | 负样例 | 半导体行业的最新新闻 | NOT get_financial_data | 行业新闻属于financial_news |
+| TC-AD-007 | 负样例 | 中国GDP增速 | NOT get_financial_data | 宏观数据属于economic_data |
+| TC-AD-008 | 边界 | 宁德时代在行业中的ROE排名 | get_financial_data | 涉及单个股和行业排名，但"排名"明确需要聚合计算 |
