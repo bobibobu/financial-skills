@@ -320,3 +320,13 @@ wind-mcp-skill: 22 installs
 a-share-primary-theme-identification: 0 installs
 
 
+第三方skill：
+tushare:
+https://github.com/stanleychanh/tushare-finance-skill-for-claude-code
+yahoo finance:
+https://github.com/gracefullight/stock-checker
+finance skills:
+https://github.com/alirezarezvani/claude-skills/tree/main/finance
+
+
+
