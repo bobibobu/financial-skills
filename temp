@@ -328,5 +328,9 @@ https://github.com/gracefullight/stock-checker
 finance skills:
 https://github.com/alirezarezvani/claude-skills/tree/main/finance
 
+npx skills add https://github.com/stanleychanh/tushare-finance-skill-for-claude-code --skill tushare-finance -g -y
+npx skills add https://github.com/gracefullight/stock-checker.git --skill yahoo-finance -g -y
+npx skills add https://github.com/alirezarezvani/claude-skills/tree/main/finance --skill finance-skills -g -y
+
 
 
