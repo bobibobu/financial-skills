@@ -333,4 +333,14 @@ npx skills add https://github.com/gracefullight/stock-checker.git --skill yahoo-
 npx skills add https://github.com/alirezarezvani/claude-skills/tree/main/finance --skill finance-skills -g -y
 
 
+npx @modelcontextprotocol/inspector
+
+
+
+
+
+
+
+
+
 
