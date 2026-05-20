@@ -335,7 +335,23 @@ npx skills add https://github.com/alirezarezvani/claude-skills/tree/main/finance
 
 npx @modelcontextprotocol/inspector
 
-
+{
+  "version": 1,
+  "skills": {
+    "wind-find-finance-skill": {
+      "source": "wind_info/wind-skills",
+      "sourceType": "git",
+      "skillPath": "skills/wind-find-finance-skill/SKILL.md",
+      "computedHash": "1c94b0af7b6751c389c41b04fc1c5a18cd4ac8b85ddc7c81856fcc7f513c1383"
+    },
+    "wind-mcp-skill": {
+      "source": "wind_info/wind-skills",
+      "sourceType": "git",
+      "skillPath": "skills/wind-mcp-skill/SKILL.md",
+      "computedHash": "1046f638feb886ee8978f733ea308b538dd7ce804f5eaf26daefca9cecfcf342"
+    }
+  }
+}
 
 
 
