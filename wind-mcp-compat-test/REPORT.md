@@ -7,21 +7,23 @@
 
 ## 1. 测试目的
 
-验证用户从旧版 wind-mcp-skill 升级到新版后，旧版生成的缓存文件 (`~/.cache/wind-aifinmarket/update-state.json`) 是否能被新版更新脚本 (`update-check.mjs`) 正确兼容处理。
+验证用户从旧版 wind-mcp-skill 升级到新版后，旧版生成的缓存文件（`~/.cache/wind-aifinmarket/update-state.json`）是否能被新版更新脚本（`update-check.mjs`）正确处理。
+
+核心问题：**旧版用的是旧缓存文件，脚本升级到新版后，能正常使用吗？会出现什么问题？**
 
 ## 2. 缓存格式差异
 
-两个版本使用完全不同的缓存格式，共享同一个文件路径：
+两个版本使用完全不同的缓存格式，但共享同一个文件路径：
 
-| 维度 | 旧版 (Wind-Info) | 新版 (JsonCode) |
+| 维度 | 旧版（Wind-Info） | 新版（JsonCode） |
 |------|-------------------|-----------------|
 | 版本标识 | `schemaVersion: 3` | `version: 1` |
 | 顶层结构 | `{schemaVersion, skills, baselines}` | `{version, meta, entries}` |
-| 数据索引 key | `skillName` (如 `"wind-mcp-skill"`) | `skillName\|lockPath` (复合 key) |
-| 状态表达 | `status` 字段 (`up_to_date` / `update_available` / `transient_error`) | `latestSha !== lastNotifiedSha` (SHA 对比) |
-| 去重机制 | sentinel 文件 (mtime 控制, 文件系统级别) | `lastNotifiedSha` 字段 (缓存内字段) |
+| 数据索引键 | `skillName`（如 `"wind-mcp-skill"`） | `skillName\|lockPath`（复合键） |
+| 状态表达 | `status` 字段（`up_to_date` / `update_available` / `transient_error`） | `latestSha !== lastNotifiedSha`（SHA 对比） |
+| 去重机制 | sentinel 文件（mtime 控制，文件系统级别） | `lastNotifiedSha` 字段（缓存内字段） |
 | 探活策略 | installedAt 反查远端 commit + baseline 兜底 | ETag/304 + SHA 对比 + 首次设基线 |
-| 文件大小 (脚本) | 674 行 / 19997 字节 | 463 行 / 26426 字节 |
+| 脚本大小 | 674 行 / 19997 字节 | 463 行 / 26426 字节 |
 | cli.mjs 大小 | 1132 行 / 46248 字节 | 656 行 / 24440 字节 |
 
 ## 3. 测试方案
@@ -35,11 +37,11 @@
 
 ## 4. 测试结果总览
 
-### 4.1 test-compat.mjs: 19/19 通过
+### 4.1 test-compat.mjs：19/19 全部通过
 
-所有 15 个测试场景的 19 个断言全部通过，无失败。
+15 个测试场景的 19 个断言全部通过，零失败。
 
-### 4.2 test-old-cache-new-script.mjs: 9 个场景全部完成
+### 4.2 test-old-cache-new-script.mjs：9 个场景全部完成
 
 每个场景都产生了明确的结果，无异常或崩溃。
 
@@ -57,9 +59,9 @@
 |---|---|---|
 | `status` 字段 | **丢失** | 新版用 SHA 对比替代，无影响 |
 | `outdated[]` 待更新列表 | **丢失** | 新版重新探活计算，无影响 |
-| `snoozedUntil` / `snoozeLevel` | **丢失** | 用户暂停的通知状态失效 (见 5.3) |
+| `snoozedUntil` / `snoozeLevel` | **丢失** | 用户暂停的通知状态失效（见 5.3） |
 | `baselines{}` 节 | **丢失** | 新版不用 baselines 机制，无影响 |
-| `skills{}` 按 skillName 索引 | **丢失** | 新版用复合 key，无影响 |
+| `skills{}` 按 skillName 索引 | **丢失** | 新版用复合键，无影响 |
 
 ### 5.3 snooze 状态丢失的实际影响
 
@@ -73,7 +75,7 @@
 
 旧版创建的 sentinel 文件（`update-shown-*`、`failure-shown-*`）在新版运行后：
 
-- **不会被主动清理**（本次测试中未触发 cleanup）
+- **不会被主动清理**（本次测试中未触发清理）
 - **不影响新版行为**（新版完全不看 sentinel 文件）
 - 新版使用缓存内的 `lastNotifiedSha` 字段做去重
 - 残留 sentinel 文件会随时间被新版 `cleanupStaleSentinels()` 逐步清理
