@@ -28,22 +28,27 @@
 
 ## 3. 测试方案
 
-设计了两个测试脚本，共 **24 个测试场景**：
+设计了三个测试脚本，共 **33 个测试场景**：
 
 - `test-compat.mjs` — 15 个通用兼容性测试（双向兼容、升降级模拟、真实安装验证）
 - `test-old-cache-new-script.mjs` — 9 个专项场景（覆盖旧缓存各种状态在新版下的表现）
+- `test-project-level.mjs` — 9 个项目级专项场景（项目级 v1 lock、缺 sourceUrl、缺 installedAt 等）
 
 所有测试均在本地真实运行，使用实际的 lock 文件和远端 GitHub API 探活。
 
 ## 4. 测试结果总览
 
-### 4.1 test-compat.mjs：19/19 全部通过
+### 4.1 test-compat.mjs（全局安装）：19/19 全部通过
 
 15 个测试场景的 19 个断言全部通过，零失败。
 
-### 4.2 test-old-cache-new-script.mjs：9 个场景全部完成
+### 4.2 test-old-cache-new-script.mjs（全局安装）：9 个场景全部完成
 
 每个场景都产生了明确的结果，无异常或崩溃。
+
+### 4.3 test-project-level.mjs（项目级安装）：9 个场景全部完成
+
+项目级安装使用 v1 格式 lock（缺少 sourceUrl、installedAt 等字段），所有场景均通过。
 
 ## 5. 关键发现
 
@@ -94,7 +99,40 @@
 | H. diagnose 命令 | 只读操作 | 不修改缓存 | 无 |
 | I. sentinel 文件 | sentinel 存在 | 新脚本忽略 sentinel | 无 |
 
-## 6. 降级兼容性（新版缓存 + 旧版脚本）
+## 6. 项目级安装测试（v1 lock）
+
+项目级安装与全局安装有本质差异，使用完全不同的 lock 格式：
+
+### 6.1 项目级 lock 格式差异
+
+| 维度 | 全局安装 (-g) | 项目级安装 |
+|------|---------------|-----------|
+| lock 文件位置 | `~/.agents/.skill-lock.json` | 项目根目录 `skills-lock.json` |
+| lock version | v3 | v1 |
+| sourceUrl 字段 | 有 | **无**（只有 `source` 短形式） |
+| installedAt 字段 | 有 | **无** |
+| updatedAt 字段 | 有 | **无** |
+| computedHash 字段 | 无（用 skillFolderHash） | 有 |
+
+### 6.2 关键测试结果
+
+1. **新版能正确推导项目级的远端 URL**：从 `source` + `sourceType` 成功推导出 `https://github.com/Wind-Information-Co-Ltd/wind-skills.git`
+2. **新版能正确找到项目级 lock 文件**：`wind-mcp-skill|c:\users\administrator\test-project\skills-lock.json`
+3. **新版对 v1 lock 使用 computedHash 作为签名**（而非 installedAt），签名变化时正确触发重新探活
+4. **新版同时管理全局和项目级两个 entry**：缓存中有两条独立记录，互不干扰
+5. **项目级 lockSchemaVersion=1**，全局 lockSchemaVersion=3，新版正确区分并分别处理
+6. **旧缓存被覆盖的行为与全局一致**：snooze、baselines 全部丢失，首次设基线不误通知
+
+### 6.3 真实升级测试（项目级）
+
+1. 旧版项目级安装 → 生成旧缓存 `schemaVersion=3`
+2. `npx skills add https://github.com/JsonCodeChina/wind-skills.git --skill wind-mcp-skill -y`（无 -g）
+3. 安装成功，lock 更新为新版 source，脚本更新为新版
+4. 运行新版 `update-check.mjs` → 旧缓存被覆盖为 `version=1`，全局+项目两个 entry
+5. `cli.mjs diagnose` → 正确显示两条 entry
+6. `cli.mjs call` → 正常工作
+
+## 7. 降级兼容性（新版缓存 + 旧版脚本）
 
 作为补充测试，也验证了反向场景：
 
@@ -102,7 +140,7 @@
 - 旧版 `cli.mjs readCacheView()` 遇到新版缓存 → 当 legacy 处理 → `state.status = undefined` → 不崩溃、不误通知
 - **结论：降级也是安全的**
 
-## 7. 新旧交替场景
+## 8. 新旧交替场景
 
 如果同时存在新旧版 skill 安装（不同项目引用不同版本）：
 
@@ -111,9 +149,11 @@
 - 性能有轻微损耗（多一次网络请求），但功能不受影响
 - 不会崩溃、不会误通知
 
-## 8. 真实安装测试
+## 9. 真实安装测试
 
-使用 `npx skills add` 进行了完整的安装升级测试：
+使用 `npx skills add` 进行了两种模式的完整安装升级测试：
+
+### 9.1 全局安装测试 (-g)
 
 1. 旧版已安装（sourceUrl 指向 Wind-Information-Co-Ltd），旧缓存 `schemaVersion=3`
 2. 执行 `npx skills add https://github.com/JsonCodeChina/wind-skills.git --skill wind-mcp-skill -g -y`
@@ -122,7 +162,16 @@
 5. 运行新版 `cli.mjs diagnose` → 正常显示空 entries（因为旧缓存被忽略）
 6. 运行新版 `cli.mjs call` → 正常工作（无 API key 场景正确报错）
 
-## 9. 结论
+### 9.2 项目级安装测试
+
+1. 旧版项目级安装（v1 lock，无 sourceUrl/installedAt）
+2. 执行 `npx skills add https://github.com/JsonCodeChina/wind-skills.git --skill wind-mcp-skill -y`
+3. 安装成功，lock 更新为新版 source
+4. 运行新版 `update-check.mjs` → 旧缓存被覆盖，同时生成全局+项目两条 entry
+5. `cli.mjs diagnose` → 正确显示两条 entry
+6. `cli.mjs call` → 正常工作
+
+## 10. 结论
 
 ### 新版脚本与旧缓存文件兼容吗？
 
